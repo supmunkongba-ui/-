@@ -2,469 +2,588 @@
 <html lang="th" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>บริการพนักงานขับรถส่วนตัว — พาคุณและรถถึงบ้านปลอดภัย</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>พากลับ — บริการพนักงานขับรถส่วนตัวบนรถของคุณ (เมาไม่ขับ • นำเที่ยว • ธุระส่วนตัว)</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Prompt -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <!-- Leaflet Map CSS & JS (แผนที่ Interactive แบบฟรี ไม่ต้องใช้ Key) -->
+  <!-- Leaflet Map CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    body { font-family: 'Prompt', sans-serif; }
+    body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
     .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
     .gold-text { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     /* Dark Theme Map Filter */
-    .leaflet-tile { filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7); }
+    .leaflet-tile { filter: brightness(0.65) invert(1) contrast(2.5) hue-rotate(200deg) saturate(0.25) brightness(0.75); }
     .leaflet-container { background: #070d1a !important; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-[#050B14] text-slate-100 min-h-screen pb-24 selection:bg-amber-500 selection:text-black">
+<body class="bg-[#050B14] text-slate-100 min-h-screen selection:bg-amber-500 selection:text-black flex flex-col justify-between">
 
-  <!-- 1. Header & Navigation -->
+  <!-- 1. Header (Grab App Style) -->
   <header class="fixed top-0 left-0 w-full bg-[#070E1B]/95 backdrop-blur-md border-b border-slate-800/80 z-40">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg gold-gradient flex items-center justify-center font-black text-slate-950 text-lg shadow-lg shadow-amber-500/20">
+    <div class="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl gold-gradient flex items-center justify-center font-black text-slate-950 text-base shadow-md shadow-amber-500/20">
           U
         </div>
-        <div class="text-sm md:text-base font-bold tracking-tight">
-          พาคุณและรถถึงบ้าน <span class="text-amber-400 text-xs font-normal hidden sm:inline">— OUR DRIVER</span>
+        <div>
+          <div class="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
+            พากลับ <span class="bg-amber-400/10 text-amber-400 text-[10px] px-1.5 py-0.2 rounded border border-amber-400/20 font-normal">Your Car • Our Driver</span>
+          </div>
+          <div class="text-[10px] text-slate-400 -mt-0.5">บริการคนขับรถส่วนตัวบนรถของคุณ</div>
         </div>
       </div>
 
-      <nav class="hidden md:flex items-center gap-7 text-xs font-medium text-slate-300">
-        <a href="#booking-section" class="hover:text-amber-400 transition">ปักหมุดจองคนขับ</a>
-        <a href="#services" class="hover:text-amber-400 transition">บริการของเรา</a>
-        <a href="#pricing" class="hover:text-amber-400 transition">ตารางค่าบริการ</a>
-        <a href="#safety" class="hover:text-amber-400 transition">มาตรฐานความปลอดภัย</a>
-        <span class="text-slate-600">|</span>
-        <span class="text-slate-400">ไทย / ENG</span>
-      </nav>
-
-      <div class="flex md:hidden items-center gap-3">
-        <span class="text-xs text-slate-400">ไทย / ENG</span>
-        <button id="menu-btn" class="p-2 border border-slate-700/80 rounded-lg text-slate-200 hover:bg-slate-800 focus:outline-none">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-        </button>
+      <div class="flex items-center gap-2">
+        <a href="tel:0984939643" class="p-2 bg-slate-900 border border-slate-700/80 rounded-xl text-amber-400 text-xs flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+          <span class="text-[11px] font-semibold hidden sm:inline">โทรด่วน</span>
+        </a>
       </div>
-    </div>
-
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden md:hidden bg-[#070E1B] border-b border-slate-800 px-6 py-4 space-y-3">
-      <a href="#booking-section" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/50">ปักหมุดจองคนขับ</a>
-      <a href="#services" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/50">บริการของเรา</a>
-      <a href="#pricing" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/50">ตารางค่าบริการ</a>
-      <a href="#safety" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5">มาตรฐานความปลอดภัย</a>
     </div>
   </header>
 
-  <!-- 2. Interactive Map Booking Section (สไตล์ Grab) -->
-  <section id="booking-section" class="relative pt-24 pb-16 px-4 border-b border-slate-900 overflow-hidden">
-    <div class="max-w-4xl mx-auto text-center mb-6">
-      <div class="inline-block text-amber-400 text-[11px] font-semibold tracking-widest uppercase mb-2 px-3 py-1 bg-amber-400/10 border border-amber-400/20 rounded-full">
-        INTERACTIVE MAP BOOKING
-      </div>
-      <h1 class="text-2xl md:text-4xl font-black tracking-tight mb-2">
-        ปักหมุดเรียกคนขับ <span class="gold-text">ส่งกลับบ้านปลอดภัย</span>
-      </h1>
-      <p class="text-slate-400 text-xs md:text-sm font-light">
-        แตะบนแผนที่เพื่อปักหมุดจุดรับ-จุดส่ง หรือกดใช้ GPS ตำแหน่งปัจจุบันของคุณ
-      </p>
+  <!-- 2. Main Workspace: Map Section -->
+  <main class="relative w-full flex-1 pt-14 pb-96 md:pb-0">
+    <div id="map" class="w-full h-[45vh] md:h-[55vh] z-10"></div>
+
+    <!-- Floating Map Controls -->
+    <div class="absolute top-16 right-4 z-20 flex flex-col gap-2">
+      <button onclick="getCurrentLocation()" class="p-3 bg-[#0C1527]/90 hover:bg-[#0C1527] border border-slate-700 rounded-2xl text-amber-400 shadow-xl backdrop-blur active:scale-90 transition" title="ตำแหน่งของฉัน">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke-width="2"></circle><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v3m0 14v3M2 12h3m14 0h3"></path></svg>
+      </button>
+      <button onclick="recenterRoute()" class="p-3 bg-[#0C1527]/90 hover:bg-[#0C1527] border border-slate-700 rounded-2xl text-slate-200 shadow-xl backdrop-blur active:scale-90 transition" title="ดูทั้งเส้นทาง">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+      </button>
     </div>
 
-    <div class="max-w-3xl mx-auto bg-[#0C1527] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-      <!-- ส่วนแผนที่ Interactive -->
-      <div class="relative w-full h-72 md:h-80 z-10">
-        <div id="map" class="w-full h-full"></div>
-        
-        <!-- ปุ่มดึง GPS ตำแหน่งปัจจุบันบนแผนที่ -->
-        <button onclick="getCurrentLocation()" class="absolute top-3 right-3 z-[400] bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-amber-400 px-3 py-2 rounded-xl text-xs font-semibold shadow-lg backdrop-blur flex items-center gap-1.5 transition active:scale-95">
-          <span>🎯 ใช้ตำแหน่งปัจจุบัน</span>
-        </button>
+    <!-- Notice Badge -->
+    <div class="absolute top-16 left-4 z-20 bg-slate-950/80 backdrop-blur border border-slate-800 text-[11px] text-slate-300 px-3 py-1.5 rounded-xl shadow-lg">
+      🛡️ พนักงานทุกคนสวมกล้อง Body Cam บันทึกสดตลอดทริป
+    </div>
+  </main>
 
-        <div class="absolute bottom-3 left-3 z-[400] bg-slate-950/85 backdrop-blur text-[11px] px-3 py-1.5 rounded-lg border border-slate-800 text-slate-300">
-          💡 ลากหมุดบนแผนที่เพื่อปรับตำแหน่งได้ตามต้องการ
-        </div>
-      </div>
+  <!-- 3. Grab-Style Booking Bottom Sheet Card -->
+  <section class="fixed bottom-0 left-0 w-full z-30 max-w-md mx-auto right-0 px-2 sm:px-4 pb-2">
+    <div class="bg-[#0A1324]/95 backdrop-blur-xl border border-slate-800/90 rounded-3xl p-4 shadow-2xl space-y-3.5 max-h-[85vh] overflow-y-auto no-scrollbar">
 
-      <!-- ฟอร์มและรายละเอียดข้อมูล -->
-      <form id="booking-form" onsubmit="event.preventDefault(); submitBooking();" class="p-5 md:p-6 space-y-4 text-left">
-        
-        <!-- จุดรับ และ จุดส่ง -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
-              <span class="flex items-center gap-1.5 text-amber-400">
-                <span class="w-2 h-2 rounded-full bg-amber-400"></span> จุดรับ (ปักหมุดสีส้ม)
-              </span>
-            </label>
-            <input type="text" id="pickup-text" required value="ทองหล่อ ซอย 10 (จุดเริ่มต้น)" class="w-full bg-[#070D1A] border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition" />
-          </div>
+      <div class="w-10 h-1 bg-slate-700/80 rounded-full mx-auto"></div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
-              <span class="flex items-center gap-1.5 text-emerald-400">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> จุดส่ง (ปักหมุดสีเขียว)
-              </span>
-            </label>
-            <input type="text" id="dropoff-text" required value="อารีย์ พหลโยธิน (จุดปลายทาง)" class="w-full bg-[#070D1A] border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition" />
-          </div>
-        </div>
+      <!-- หมวดหมู่บริการ 3 แบบหลัก -->
+      <div>
+        <label class="block text-[11px] font-semibold text-slate-400 mb-1.5">เลือกประเภทบริการที่คุณต้องการ</label>
+        <div class="grid grid-cols-3 gap-1.5">
+          <!-- บริการ 1: เมาไม่ขับ -->
+          <button type="button" onclick="selectServiceMode('party')" id="mode-party" class="p-2.5 rounded-2xl border-2 border-amber-400 bg-amber-400/10 text-center transition">
+            <div class="text-lg">🍻</div>
+            <div class="text-xs font-bold text-white mt-0.5">เมาไม่ขับ</div>
+            <div class="text-[9px] text-amber-400 mt-0.5">คิดตามระยะทาง</div>
+          </button>
 
-        <!-- แถบระยะทางที่คำนวณได้อัตโนมัติ -->
-        <div class="bg-[#070D1A] border border-slate-800 px-4 py-3 rounded-xl flex items-center justify-between text-xs">
-          <div class="flex items-center gap-2">
-            <span class="text-slate-400">📏 ระยะทางประเมินบนแผนที่:</span>
-            <span id="calculated-km" class="font-bold text-amber-400 text-sm">7.5 กม.</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-slate-400">⏱️ เวลาเดินทางประมาณ:</span>
-            <span id="calculated-time" class="font-semibold text-slate-200">18 นาที</span>
-          </div>
-        </div>
+          <!-- บริการ 2: คนขับนำเที่ยว -->
+          <button type="button" onclick="selectServiceMode('tour')" id="mode-tour" class="p-2.5 rounded-2xl border border-slate-800 bg-[#070D1A] text-center transition hover:border-slate-700">
+            <div class="text-lg">🚗</div>
+            <div class="text-xs font-bold text-white mt-0.5">คนขับนำเที่ยว</div>
+            <div class="text-[9px] text-slate-400 mt-0.5">เหมาวัน/ชั่วโมง</div>
+          </button>
 
-        <!-- ตัวเลือกคนขับ ชาย/หญิง & ประเภทเกียร์ -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">👤 ต้องการพนักงานขับรถ</label>
-            <div class="grid grid-cols-3 gap-1.5 bg-[#070D1A] p-1 rounded-xl border border-slate-700/80 text-xs">
-              <button type="button" id="gender-any" onclick="selectGender('any')" class="py-2 rounded-lg font-bold bg-[#D4E0F0] text-slate-950 transition">ไม่ระบุ</button>
-              <button type="button" id="gender-male" onclick="selectGender('male')" class="py-2 rounded-lg font-semibold text-slate-400 transition">ผู้ชาย</button>
-              <button type="button" id="gender-female" onclick="selectGender('female')" class="py-2 rounded-lg font-semibold text-slate-400 transition">ผู้หญิง</button>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">⚙️ ประเภทเกียร์รถของคุณ</label>
-            <select id="input-gear" class="w-full bg-[#070D1A] border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-white focus:outline-none focus:border-amber-400">
-              <option value="auto">เกียร์ออโต้ (Automatic)</option>
-              <option value="manual">เกียร์ธรรมดา (Manual)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- ข้อมูลคนขับที่พร้อมให้บริการ (Driver Card) -->
-        <div class="bg-[#070D1A] border border-slate-800 rounded-2xl p-4">
-          <div class="text-[11px] text-slate-400 font-semibold mb-2.5 flex items-center justify-between">
-            <span>พนักงานขับรถใกล้คุณที่สุด:</span>
-            <span class="text-emerald-400 font-bold text-[10px] flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> พร้อมรับงานทันที
-            </span>
-          </div>
-
-          <div class="flex items-center gap-3.5">
-            <div class="relative w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400/80 flex-shrink-0 shadow-md">
-              <img id="driver-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80" alt="Driver Avatar" class="w-full h-full object-cover" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <h4 id="driver-name" class="text-sm font-bold text-white truncate">เกรียงศักดิ์ สุขสวัสดิ์</h4>
-                <span id="driver-tag" class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] px-2 py-0.5 rounded-full font-semibold">พร้อมส่งงานด่วน</span>
-              </div>
-              <div class="text-[11px] text-slate-400 mt-0.5">
-                รหัสคนขับ: <span id="driver-id" class="text-slate-200 font-mono">DRV-045</span> • ★ 4.98 (120+ ทริป)
-              </div>
-              <div class="text-[10px] text-emerald-400 mt-1 flex items-center gap-1">
-                🛡️ ติดตั้ง Body Cam บันทึกสด + สวมเสื้อกั๊กสะท้อนแสง
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- สรุปราคาและปุ่มยืนยันจอง -->
-        <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
-          <div>
-            <span class="text-xs text-slate-400 block">ค่าบริการสุทธิ (คำนวณตามแผนที่):</span>
-            <span class="text-2xl font-black text-amber-400" id="total-fare">490 บาท</span>
-          </div>
-          <button type="submit" class="gold-gradient hover:opacity-95 text-slate-950 font-extrabold px-6 py-3.5 rounded-xl text-xs md:text-sm shadow-lg shadow-amber-500/20 active:scale-95 transition">
-            ยืนยันเรียกคนขับทันที ↗
+          <!-- บริการ 3: ธุระอื่นๆ -->
+          <button type="button" onclick="selectServiceMode('errand')" id="mode-errand" class="p-2.5 rounded-2xl border border-slate-800 bg-[#070D1A] text-center transition hover:border-slate-700">
+            <div class="text-lg">💼</div>
+            <div class="text-xs font-bold text-white mt-0.5">ธุระทั่วไป</div>
+            <div class="text-[9px] text-slate-400 mt-0.5">หาหมอ/ส่งรถศูนย์</div>
           </button>
         </div>
-      </form>
+      </div>
+
+      <!-- บล็อกเลือกแพ็กเกจชั่วโมง (แสดงเมื่อเลือก นำเที่ยว หรือ ธุระทั่วไป) -->
+      <div id="hourly-package-box" class="hidden bg-[#070D1A] border border-slate-800 rounded-2xl p-2.5 space-y-1.5">
+        <label class="block text-[11px] font-semibold text-slate-300">เลือกแพ็กเกจเวลาที่ต้องการจ้าง</label>
+        <div class="grid grid-cols-3 gap-1.5 text-center text-xs">
+          <button type="button" onclick="selectHours(4, 990)" id="hr-4" class="p-2 rounded-xl border border-slate-700 bg-slate-900/60 font-semibold text-slate-300">
+            <div>4 ชั่วโมง</div>
+            <div class="text-amber-400 font-bold text-xs mt-0.5">990.-</div>
+          </button>
+          <button type="button" onclick="selectHours(8, 1490)" id="hr-8" class="p-2 rounded-xl border-2 border-amber-400 bg-amber-400/10 font-bold text-white">
+            <div>8 ชั่วโมง</div>
+            <div class="text-amber-400 font-bold text-xs mt-0.5">1,490.-</div>
+          </button>
+          <button type="button" onclick="selectHours(12, 1990)" id="hr-12" class="p-2 rounded-xl border border-slate-700 bg-slate-900/60 font-semibold text-slate-300">
+            <div>12 ชั่วโมง (วัน)</div>
+            <div class="text-amber-400 font-bold text-xs mt-0.5">1,990.-</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Route Inputs (จุดรับและจุดส่ง) -->
+      <div class="bg-[#070D1A] border border-slate-800 rounded-2xl p-3 relative">
+        <div class="absolute left-[23px] top-[28px] bottom-[28px] w-0.5 border-l-2 border-dashed border-slate-600"></div>
+
+        <!-- จุดรับ -->
+        <div class="relative flex items-center mb-2.5">
+          <div class="w-4 h-4 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center mr-3 z-10">
+            <div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+          </div>
+          <div class="flex-1 relative">
+            <input
+              type="text"
+              id="pickup-input"
+              value="ทองหล่อ ซอย 10"
+              placeholder="ระบุจุดให้คนขับไปรับคุณและรถ"
+              oninput="debounceSearch('pickup', this.value)"
+              class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-medium pr-6"
+            />
+            <div id="pickup-results" class="absolute left-0 top-8 w-full bg-[#0C1527] border border-slate-700 rounded-xl shadow-2xl z-50 hidden max-h-40 overflow-y-auto"></div>
+          </div>
+          <button onclick="getCurrentLocation()" class="text-amber-400 text-[11px] font-semibold whitespace-nowrap px-1.5 py-0.5 hover:underline">
+            GPS
+          </button>
+        </div>
+
+        <div class="border-t border-slate-800/80 my-1 ml-7"></div>
+
+        <!-- จุดส่ง / แผนการเดินทาง -->
+        <div class="relative flex items-center mt-2.5">
+          <div class="w-4 h-4 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center mr-3 z-10">
+            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+          </div>
+          <div class="flex-1 relative">
+            <input
+              type="text"
+              id="dropoff-input"
+              value="อารีย์ พหลโยธิน"
+              placeholder="ระบุจุดหมายปลายทาง หรือสถานที่เที่ยว"
+              oninput="debounceSearch('dropoff', this.value)"
+              class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-medium"
+            />
+            <div id="dropoff-results" class="absolute left-0 top-8 w-full bg-[#0C1527] border border-slate-700 rounded-xl shadow-2xl z-50 hidden max-h-40 overflow-y-auto"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Route Estimation Bar (เฉพาะโหมดตามระยะทาง) -->
+      <div id="route-stats-bar" class="flex items-center justify-between text-xs px-2 py-1 bg-slate-900/60 rounded-xl border border-slate-800 text-slate-300">
+        <div class="flex items-center gap-1.5">
+          <span>📏 ระยะทาง:</span>
+          <span id="route-km" class="font-bold text-amber-400">7.5 กม.</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span>⏱️ เวลาขับ:</span>
+          <span id="route-eta" class="font-semibold text-slate-200">18 นาที</span>
+        </div>
+        <div class="flex items-center gap-1 text-[11px] text-emerald-400 font-semibold">
+          <span>🟢 ฟรีเวลารอ 15 น.</span>
+        </div>
+      </div>
+
+      <!-- ประเภทยานพาหนะของลูกค้า -->
+      <div>
+        <label class="block text-[11px] font-semibold text-slate-400 mb-1.5">ประเภทยานพาหนะของคุณ</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="selectTier('standard')" id="tier-standard" class="p-2 rounded-xl border-2 border-amber-400 bg-amber-400/10 text-left transition">
+            <div class="text-sm">🚗</div>
+            <div class="text-xs font-bold text-white">เก๋งทั่วไป/EV</div>
+            <div class="text-[9px] text-slate-400">City, Civic, BYD</div>
+          </button>
+          <button type="button" onclick="selectTier('luxury')" id="tier-luxury" class="p-2 rounded-xl border border-slate-800 bg-[#070D1A] text-left transition hover:border-slate-700">
+            <div class="text-sm">🚘</div>
+            <div class="text-xs font-bold text-white">รถยุโรป/SUV</div>
+            <div class="text-[9px] text-slate-400">Benz, BMW, CR-V</div>
+          </button>
+          <button type="button" onclick="selectTier('van')" id="tier-van" class="p-2 rounded-xl border border-slate-800 bg-[#070D1A] text-left transition hover:border-slate-700">
+            <div class="text-sm">🚐</div>
+            <div class="text-xs font-bold text-white">รถตู้ VIP</div>
+            <div class="text-[9px] text-slate-400">Alphard, H1, Commuter</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ตัวเลือกคนขับ หญิง / ชาย / ใครก็ได้ -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between text-[11px]">
+          <span class="text-slate-400 font-semibold">ความต้องการคนขับ</span>
+          <span class="text-slate-500">เกียร์: <select id="gear-select" class="bg-transparent text-slate-300 border-none focus:outline-none font-semibold"><option value="auto">ออโต้ (Auto)</option><option value="manual">ธรรมดา (Manual)</option></select></span>
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 bg-[#070D1A] p-1 rounded-xl border border-slate-800 text-xs">
+          <button type="button" id="gender-any" onclick="setDriverGender('any')" class="py-2 rounded-lg font-bold bg-[#D4E0F0] text-slate-950 transition">ใกล้สุด (ด่วน)</button>
+          <button type="button" id="gender-female" onclick="setDriverGender('female')" class="py-2 rounded-lg font-semibold text-slate-400 transition">👩 คนขับหญิง</button>
+          <button type="button" id="gender-male" onclick="setDriverGender('male')" class="py-2 rounded-lg font-semibold text-slate-400 transition">👨 คนขับชาย</button>
+        </div>
+      </div>
+
+      <!-- การ์ดแสดงโปรไฟล์คนขับ (Driver Preview Card) -->
+      <div class="bg-[#070D1A] border border-slate-800/80 rounded-2xl p-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="relative w-12 h-12 rounded-xl overflow-hidden border border-amber-400/80 flex-shrink-0">
+            <img id="drv-img" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80" alt="Driver" class="w-full h-full object-cover" />
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h4 id="drv-name" class="text-xs font-bold text-white truncate">วิภาดา รักษาความปลอดภัย</h4>
+              <span id="drv-tag" class="text-[9px] bg-pink-500/20 text-pink-400 border border-pink-500/30 px-1.5 py-0.2 rounded-full font-medium">คนขับหญิง</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-0.5">
+              รหัส: <span id="drv-code" class="text-slate-200 font-mono">DRV-104</span> • ขับได้ทุกระบบเกียร์
+            </div>
+            <div class="text-[10px] text-amber-400 font-semibold mt-0.5 flex items-center gap-1">
+              ★ 4.98 • <span class="text-emerald-400">📹 สวมกล้อง Body Cam ตลอดทริป</span>
+            </div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[10px] text-slate-400">ถึงคุณใน</div>
+          <div class="text-xs font-black text-amber-400">~ 7 นาที</div>
+        </div>
+      </div>
+
+      <!-- สรุปค่าบริการและปุ่มเรียกคนขับ -->
+      <div class="pt-2 border-t border-slate-800 space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] text-slate-400">
+            <span id="fare-desc-label">คำนวณตามระยะทาง (เริ่มต้น 390.-)</span>
+            <div class="text-slate-300 text-[10px]">ชำระ: เงินสด / QR Code</div>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-black text-amber-400 leading-none" id="final-fare">490 บาท</div>
+          </div>
+        </div>
+
+        <button
+          onclick="bookNow()"
+          class="w-full gold-gradient hover:opacity-95 text-slate-950 font-black py-3.5 rounded-2xl text-sm shadow-xl shadow-amber-500/20 active:scale-[0.98] transition flex items-center justify-center gap-2"
+        >
+          <span id="btn-submit-label">เรียกรถพากลับบ้าน (Book Driver)</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+      </div>
+
     </div>
   </section>
 
-  <!-- 3. บริการของเรา -->
-  <section id="services" class="py-16 px-4 max-w-6xl mx-auto">
-    <div class="text-center mb-10">
-      <span class="text-amber-400 text-xs font-bold uppercase tracking-wider">OUR SERVICES</span>
-      <h2 class="text-2xl md:text-3xl font-extrabold mt-1">วันนี้ คุณอยากให้เราขับแทนตอนไหน?</h2>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-[#0A1324] border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
-        <div class="h-44 overflow-hidden relative">
-          <img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80" alt="Party" class="w-full h-full object-cover" />
-          <span class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-slate-800">01 / AFTER HOURS</span>
-        </div>
-        <div class="p-5 flex-1">
-          <h3 class="text-base font-bold text-white mb-1.5">กลับบ้านหลังดื่ม</h3>
-          <p class="text-slate-400 text-xs leading-relaxed">ไปปาร์ตี้ไม่ต้องกังวลเรื่องด่านเป่าแอลกอฮอล์ ส่งคุณและรถถึงบ้านอย่างปลอดภัย</p>
-        </div>
-      </div>
-
-      <div class="bg-[#0A1324] border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
-        <div class="h-44 overflow-hidden relative">
-          <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80" alt="Work" class="w-full h-full object-cover" />
-          <span class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-slate-800">02 / WORK & MEETINGS</span>
-        </div>
-        <div class="p-5 flex-1">
-          <h3 class="text-base font-bold text-white mb-1.5">วันประชุม & ติดต่องาน</h3>
-          <p class="text-slate-400 text-xs leading-relaxed">ขึ้น-ลงรถได้ทันทีหน้าตึก ไม่ต้องวนหาที่จอด ให้คุณโฟกัสการคุยงานได้เต็มที่</p>
-        </div>
-      </div>
-
-      <div class="bg-[#0A1324] border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
-        <div class="h-44 overflow-hidden relative">
-          <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80" alt="Hospital" class="w-full h-full object-cover" />
-          <span class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-slate-800">03 / APPOINTMENTS</span>
-        </div>
-        <div class="p-5 flex-1">
-          <h3 class="text-base font-bold text-white mb-1.5">ไปโรงพยาบาล / พบแพทย์</h3>
-          <p class="text-slate-400 text-xs leading-relaxed">ขับให้ในวันที่ร่างกายไม่พร้อม หลังผ่าตัด หรือตรวจสุขภาพ อุ่นใจเหมือนมีคนดูแลส่วนตัว</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. ตารางอัตราค่าบริการ -->
-  <section id="pricing" class="py-16 px-4 bg-[#070E1B] border-y border-slate-900">
-    <div class="max-w-4xl mx-auto">
-      <div class="text-center mb-10">
-        <span class="text-amber-400 text-xs font-bold uppercase tracking-wider">AFFORDABLE PRICING</span>
-        <h2 class="text-2xl md:text-3xl font-extrabold mt-1">อัตราค่าบริการเริ่มต้น 390 บาท</h2>
-        <p class="text-slate-400 text-xs md:text-sm mt-1">คำนวณตามระยะทางจริง ไม่มีค่าใช้จ่ายแอบแฝง</p>
-      </div>
-
-      <div class="bg-[#0A1324] border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-        <div class="p-4 bg-slate-900/80 border-b border-slate-800 font-semibold text-sm text-white flex justify-between">
-          <span>ระยะทาง (กม.)</span>
-          <span class="text-amber-400 text-xs font-bold">ราคามาตรฐาน</span>
-        </div>
-        <div class="divide-y divide-slate-800/60 text-xs md:text-sm">
-          <div class="p-3.5 flex justify-between"><span>0 – 5 กม. (เริ่มต้น)</span><span class="font-bold text-amber-400 text-base">390 บาท</span></div>
-          <div class="p-3.5 flex justify-between"><span>6 – 10 กม.</span><span class="font-semibold text-slate-200">490 บาท</span></div>
-          <div class="p-3.5 flex justify-between"><span>11 – 15 กม.</span><span class="font-semibold text-slate-200">590 บาท</span></div>
-          <div class="p-3.5 flex justify-between"><span>16 – 20 กม.</span><span class="font-semibold text-slate-200">690 บาท</span></div>
-          <div class="p-3.5 flex justify-between"><span>21 – 25 กม.</span><span class="font-semibold text-slate-200">790 บาท</span></div>
-          <div class="p-3.5 flex justify-between"><span>26 – 30 กม.</span><span class="font-semibold text-slate-200">890 บาท</span></div>
-          <div class="p-3.5 flex justify-between"><span>31 – 40 กม.</span><span class="font-semibold text-slate-200">1,090 บาท</span></div>
-          <div class="p-3.5 flex justify-between"><span>41 – 50 กม.</span><span class="font-semibold text-slate-200">1,290 บาท</span></div>
-        </div>
-        <div class="p-3.5 bg-slate-900/50 text-[11px] text-slate-400 text-center border-t border-slate-800">
-          * เกิน 50 กิโลเมตร คิดเพิ่มกิโลเมตรละ 25 บาท | ฟรีเวลารอ 15 นาทีแรก
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. Footer -->
-  <footer class="py-8 px-4 text-center text-slate-600 text-[11px] border-t border-slate-900 bg-[#050B14]">
-    <p>© 2026 บริการพาคุณและรถถึงบ้านปลอดภัย. All rights reserved.</p>
-    <p class="mt-1">โทร: 098-493-9643 | LINE: @safedrive</p>
-  </footer>
-
-  <!-- 6. Bottom Sticky Action Bar -->
-  <div class="fixed bottom-0 left-0 w-full bg-[#070E1B]/95 backdrop-blur-md border-t border-slate-800 p-3 z-30">
-    <div class="max-w-md mx-auto grid grid-cols-2 gap-3">
-      <a href="tel:0984939643" class="flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl border border-slate-700 bg-slate-900 text-slate-200 text-xs md:text-sm font-semibold active:scale-95 transition">
-        <span>📞 โทรสอบถาม</span>
-      </a>
-      <a href="#booking-section" class="flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl bg-slate-200 text-slate-950 text-xs md:text-sm font-bold shadow-md hover:bg-white active:scale-95 transition">
-        <span>จองพนักงานขับรถ ↗</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- JavaScript ระบบ Interactive Map & การคำนวณราคา -->
+  <!-- JavaScript ระบบ Interactive Logic ทั้งหมด -->
   <script>
-    // ข้อมูลคนขับจำลองแยกตามเพศ
+    // 1. Data Store
     const drivers = {
       female: {
         name: "วิภาดา รักษาความปลอดภัย",
-        id: "DRV-104 (หญิง)",
-        avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80",
+        code: "DRV-104 (หญิง)",
+        img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80",
         tag: "คนขับหญิง",
         tagClass: "bg-pink-500/20 text-pink-400 border border-pink-500/30"
       },
       male: {
         name: "สมชาย มั่นคง",
-        id: "DRV-082 (ชาย)",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
+        code: "DRV-082 (ชาย)",
+        img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
         tag: "คนขับชาย",
         tagClass: "bg-blue-500/20 text-blue-400 border border-blue-500/30"
       },
       any: {
         name: "เกรียงศักดิ์ สุขสวัสดิ์",
-        id: "DRV-045 (คนขับมาตรฐาน)",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80",
+        code: "DRV-045 (ใกล้สุด)",
+        img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80",
         tag: "พร้อมส่งงานด่วน",
         tagClass: "bg-amber-500/20 text-amber-400 border border-amber-500/30"
       }
     };
 
+    let activeServiceMode = 'party'; // 'party' (ระยะทาง), 'tour' (ชั่วโมง), 'errand' (ชั่วโมง)
+    let selectedTier = 'standard';
     let selectedGender = 'any';
+    let selectedHoursRate = 1490;
+    let selectedHoursCount = 8;
+    let currentDistanceKm = 7.5;
 
-    function selectGender(gender) {
-      selectedGender = gender;
-      const btnAny = document.getElementById('gender-any');
-      const btnMale = document.getElementById('gender-male');
-      const btnFemale = document.getElementById('gender-female');
-
-      [btnAny, btnMale, btnFemale].forEach(btn => {
-        btn.className = "py-2 rounded-lg font-semibold text-slate-400 transition";
-      });
-
-      if (gender === 'any') btnAny.className = "py-2 rounded-lg font-bold bg-[#D4E0F0] text-slate-950 transition";
-      if (gender === 'male') btnMale.className = "py-2 rounded-lg font-bold bg-[#D4E0F0] text-slate-950 transition";
-      if (gender === 'female') btnFemale.className = "py-2 rounded-lg font-bold bg-[#D4E0F0] text-slate-950 transition";
-
-      const d = drivers[gender];
-      document.getElementById('driver-name').innerText = d.name;
-      document.getElementById('driver-id').innerText = d.id;
-      document.getElementById('driver-avatar').src = d.avatar;
-      
-      const tagEl = document.getElementById('driver-tag');
-      tagEl.innerText = d.tag;
-      tagEl.className = `${d.tagClass} text-[10px] px-2 py-0.5 rounded-full font-semibold`;
-    }
-
-    // ----------------------------------------------------
-    // ตั้งค่า Leaflet Map (Interactive Map)
-    // ----------------------------------------------------
-    let map, pickupMarker, dropoffMarker, routeLine;
-    let pickupCoords = [13.7317, 100.5828]; // ค่าเริ่มต้น: ทองหล่อ
-    let dropoffCoords = [13.7797, 100.5447]; // ค่าเริ่มต้น: อารีย์
+    // Leaflet Coordinates
+    let map, pickupMarker, dropoffMarker, routePolyline;
+    let pickupCoords = [13.7317, 100.5828]; // ทองหล่อ
+    let dropoffCoords = [13.7797, 100.5447]; // อารีย์
 
     function initMap() {
-      map = L.map('map', {
-        zoomControl: false
-      }).setView([13.7563, 100.5638], 12);
+      map = L.map('map', { zoomControl: false }).setView([13.7563, 100.5638], 12);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap'
       }).addTo(map);
 
-      // สร้าง Custom Pin หมุดสีส้ม (จุดรับ) และสีเขียว (จุดส่ง)
       const pickupIcon = L.divIcon({
-        className: 'custom-pin-pickup',
-        html: '<div style="background-color: #f59e0b; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 0 10px rgba(245,158,11,0.8);"></div>',
-        iconSize: [18, 18],
-        iconAnchor: [9, 9]
+        className: 'custom-pickup-pin',
+        html: '<div style="background:#f59e0b; width:20px; height:20px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 12px rgba(245,158,11,0.9);"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
       });
 
       const dropoffIcon = L.divIcon({
-        className: 'custom-pin-dropoff',
-        html: '<div style="background-color: #10b981; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 0 10px rgba(16,185,129,0.8);"></div>',
-        iconSize: [18, 18],
-        iconAnchor: [9, 9]
+        className: 'custom-dropoff-pin',
+        html: '<div style="background:#10b981; width:20px; height:20px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 12px rgba(16,185,129,0.9);"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
       });
 
-      // ปักหมุดแบบลากย้ายได้ (Draggable)
-      pickupMarker = L.marker(pickupCoords, { draggable: true, icon: pickupIcon }).addTo(map).bindPopup("📍 จุดรับ (ลากย้ายได้)");
-      dropoffMarker = L.marker(dropoffCoords, { draggable: true, icon: dropoffIcon }).addTo(map).bindPopup("🏁 จุดส่ง (ลากย้ายได้)");
+      pickupMarker = L.marker(pickupCoords, { draggable: true, icon: pickupIcon }).addTo(map);
+      dropoffMarker = L.marker(dropoffCoords, { draggable: true, icon: dropoffIcon }).addTo(map);
 
       pickupMarker.on('dragend', function (e) {
         pickupCoords = [e.target.getLatLng().lat, e.target.getLatLng().lng];
-        document.getElementById('pickup-text').value = `พิกัด: ${pickupCoords[0].toFixed(4)}, ${pickupCoords[1].toFixed(4)}`;
-        calculateRouteAndFare();
+        reverseGeocode(pickupCoords, 'pickup-input');
+        updateRouteAndPricing();
       });
 
       dropoffMarker.on('dragend', function (e) {
         dropoffCoords = [e.target.getLatLng().lat, e.target.getLatLng().lng];
-        document.getElementById('dropoff-text').value = `พิกัด: ${dropoffCoords[0].toFixed(4)}, ${dropoffCoords[1].toFixed(4)}`;
-        calculateRouteAndFare();
+        reverseGeocode(dropoffCoords, 'dropoff-input');
+        updateRouteAndPricing();
       });
 
-      calculateRouteAndFare();
+      updateRouteAndPricing();
     }
 
-    // คำนวณระยะทางแบบ Haversine Formula + ปรับเป็นระยะทางถนนจริง
-    function calculateRouteAndFare() {
+    // 2. สลับหมวดหมู่บริการ (เมาไม่ขับ / คนขับนำเที่ยว / ธุระส่วนตัว)
+    function selectServiceMode(mode) {
+      activeServiceMode = mode;
+      ['party', 'tour', 'errand'].forEach(m => {
+        const btn = document.getElementById(`mode-${m}`);
+        if (m === mode) {
+          btn.className = 'p-2.5 rounded-2xl border-2 border-amber-400 bg-amber-400/10 text-center transition';
+        } else {
+          btn.className = 'p-2.5 rounded-2xl border border-slate-800 bg-[#070D1A] text-center transition hover:border-slate-700';
+        }
+      });
+
+      const hourlyBox = document.getElementById('hourly-package-box');
+      const statsBar = document.getElementById('route-stats-bar');
+      const submitBtn = document.getElementById('btn-submit-label');
+      const fareDesc = document.getElementById('fare-desc-label');
+
+      if (mode === 'party') {
+        hourlyBox.classList.add('hidden');
+        statsBar.classList.remove('hidden');
+        submitBtn.innerText = 'เรียกรถพากลับบ้าน (Book Driver)';
+        fareDesc.innerText = 'คำนวณตามระยะทาง (เริ่มต้น 390.-)';
+        updateRouteAndPricing();
+      } else if (mode === 'tour') {
+        hourlyBox.classList.remove('hidden');
+        statsBar.classList.add('hidden');
+        submitBtn.innerText = 'จองคนขับนำเที่ยว (Book Tour Driver)';
+        fareDesc.innerText = `เหมานำเที่ยว ${selectedHoursCount} ชั่วโมง`;
+        applyHourlyPricing();
+      } else {
+        hourlyBox.classList.remove('hidden');
+        statsBar.classList.add('hidden');
+        submitBtn.innerText = 'จองคนขับธุระทั่วไป (Book Driver)';
+        fareDesc.innerText = `เหมาธุระ ${selectedHoursCount} ชั่วโมง`;
+        applyHourlyPricing();
+      }
+    }
+
+    // 3. จัดการเลือกแพ็กเกจชั่วโมง
+    function selectHours(hrs, price) {
+      selectedHoursCount = hrs;
+      selectedHoursRate = price;
+      [4, 8, 12].forEach(h => {
+        const btn = document.getElementById(`hr-${h}`);
+        if (h === hrs) {
+          btn.className = 'p-2 rounded-xl border-2 border-amber-400 bg-amber-400/10 font-bold text-white';
+        } else {
+          btn.className = 'p-2 rounded-xl border border-slate-700 bg-slate-900/60 font-semibold text-slate-300';
+        }
+      });
+      applyHourlyPricing();
+    }
+
+    function applyHourlyPricing() {
+      let final = selectedHoursRate;
+      if (selectedTier === 'luxury') final += 200;
+      if (selectedTier === 'van') final += 400;
+      document.getElementById('final-fare').innerText = `${final.toLocaleString()} บาท`;
+      document.getElementById('fare-desc-label').innerText = `เหมาบริการ ${selectedHoursCount} ชั่วโมง`;
+    }
+
+    // 4. การคำนวณระยะทางและราคาโหมดเมาไม่ขับ
+    function updateRouteAndPricing() {
       const lat1 = pickupCoords[0], lon1 = pickupCoords[1];
       const lat2 = dropoffCoords[0], lon2 = dropoffCoords[1];
 
-      const R = 6371; // รัศมีโลกเป็น กม.
+      const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      
-      // คูณ 1.35 เพื่อแปลงเป็นระยะทางถนนคดเคี้ยวจริงในกรุงเทพฯ
-      const distanceKm = Math.max(1, (R * c * 1.35)).toFixed(1);
-      const durationMin = Math.round(distanceKm * 2.3);
 
-      document.getElementById('calculated-km').innerText = `${distanceKm} กม.`;
-      document.getElementById('calculated-time').innerText = `${durationMin} นาที`;
+      currentDistanceKm = Math.max(1, (R * c * 1.35)).toFixed(1);
+      const etaMin = Math.round(currentDistanceKm * 2.3);
 
-      // วาดเส้นทางบนแผนที่
-      if (routeLine) map.removeLayer(routeLine);
-      routeLine = L.polyline([pickupCoords, dropoffCoords], { color: '#f59e0b', weight: 4, dashArray: '6, 8' }).addTo(map);
-      map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+      document.getElementById('route-km').innerText = `${currentDistanceKm} กม.`;
+      document.getElementById('route-eta').innerText = `${etaMin} นาที`;
 
-      // คำนวณค่าบริการตามระยะทาง
-      let km = parseFloat(distanceKm);
-      let fare = 390;
-      if (km <= 5) fare = 390;
-      else if (km <= 10) fare = 490;
-      else if (km <= 15) fare = 590;
-      else if (km <= 20) fare = 690;
-      else if (km <= 25) fare = 790;
-      else if (km <= 30) fare = 890;
-      else if (km <= 40) fare = 1090;
-      else if (km <= 50) fare = 1290;
-      else fare = 1290 + ((km - 50) * 25);
+      if (routePolyline) map.removeLayer(routePolyline);
+      routePolyline = L.polyline([pickupCoords, dropoffCoords], {
+        color: '#f59e0b',
+        weight: 4,
+        opacity: 0.85,
+        dashArray: '6, 8'
+      }).addTo(map);
 
-      document.getElementById('total-fare').innerText = `${Math.round(fare).toLocaleString()} บาท`;
-    }
+      if (activeServiceMode === 'party') {
+        let baseFare = 390;
+        let km = parseFloat(currentDistanceKm);
+        if (km <= 5) baseFare = 390;
+        else if (km <= 10) baseFare = 490;
+        else if (km <= 15) baseFare = 590;
+        else if (km <= 20) baseFare = 690;
+        else if (km <= 25) baseFare = 790;
+        else if (km <= 30) baseFare = 890;
+        else if (km <= 40) baseFare = 1090;
+        else if (km <= 50) baseFare = 1290;
+        else baseFare = 1290 + ((km - 50) * 25);
 
-    // ฟังก์ชันดึงพิกัด GPS ตำแหน่งปัจจุบัน
-    function getCurrentLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function (position) {
-            pickupCoords = [position.coords.latitude, position.coords.longitude];
-            pickupMarker.setLatLng(pickupCoords);
-            document.getElementById('pickup-text').value = `📍 ตำแหน่งปัจจุบันของคุณ (${pickupCoords[0].toFixed(4)}, ${pickupCoords[1].toFixed(4)})`;
-            map.setView(pickupCoords, 14);
-            calculateRouteAndFare();
-          },
-          function (error) {
-            alert("ไม่สามารถดึงตำแหน่งพิกัดได้ กรุณาเปิด GPS หรือแตะเลือกบนแผนที่โดยตรง");
-          }
-        );
-      } else {
-        alert("เบราว์เซอร์ของคุณไม่รองรับ Geolocation");
+        if (selectedTier === 'luxury') baseFare += 100;
+        if (selectedTier === 'van') baseFare += 200;
+
+        document.getElementById('final-fare').innerText = `${Math.round(baseFare).toLocaleString()} บาท`;
       }
     }
 
-    function submitBooking() {
-      const p = document.getElementById('pickup-text').value;
-      const d = document.getElementById('dropoff-text').value;
-      const km = document.getElementById('calculated-km').innerText;
-      const fare = document.getElementById('total-fare').innerText;
-      const gear = document.getElementById('input-gear').value;
-      const driver = drivers[selectedGender].name;
+    // 5. เลือกประเภทยานพาหนะ
+    function selectTier(tier) {
+      selectedTier = tier;
+      ['standard', 'luxury', 'van'].forEach(t => {
+        const el = document.getElementById(`tier-${t}`);
+        if (t === tier) {
+          el.className = 'p-2 rounded-xl border-2 border-amber-400 bg-amber-400/10 text-left transition';
+        } else {
+          el.className = 'p-2 rounded-xl border border-slate-800 bg-[#070D1A] text-left transition hover:border-slate-700';
+        }
+      });
 
-      alert(`บันทึกข้อมูลเรียบร้อย!\n• จุดรับ: ${p}\n• จุดส่ง: ${d}\n• ระยะทาง: ${km}\n• ค่าบริการ: ${fare}\n• เกียร์: ${gear}\n• คนขับที่จัดสรร: ${driver}\n\nระบบพร้อมส่งข้อมูลต่อไปยัง LINE Official`);
+      if (activeServiceMode === 'party') {
+        updateRouteAndPricing();
+      } else {
+        applyHourlyPricing();
+      }
     }
 
-    // เริ่มโหลดแผนที่เมื่อหน้าเว็บพร้อม
-    window.addEventListener('DOMContentLoaded', initMap);
+    // 6. เลือกเพศคนขับ
+    function setDriverGender(gender) {
+      selectedGender = gender;
+      ['any', 'female', 'male'].forEach(g => {
+        const btn = document.getElementById(`gender-${g}`);
+        if (g === gender) {
+          btn.className = 'py-2 rounded-lg font-bold bg-[#D4E0F0] text-slate-950 transition';
+        } else {
+          btn.className = 'py-2 rounded-lg font-semibold text-slate-400 transition';
+        }
+      });
 
-    // Mobile Menu
-    const btn = document.getElementById('menu-btn');
-    const menu = document.getElementById('mobile-menu');
-    btn.addEventListener('click', () => menu.classList.toggle('hidden'));
-    document.querySelectorAll('.mobile-link').forEach(l => l.addEventListener('click', () => menu.classList.add('hidden')));
+      const d = drivers[gender];
+      document.getElementById('drv-name').innerText = d.name;
+      document.getElementById('drv-code').innerText = d.code;
+      document.getElementById('drv-img').src = d.img;
+      const tag = document.getElementById('drv-tag');
+      tag.innerText = d.tag;
+      tag.className = `text-[9px] ${d.tagClass} px-1.5 py-0.2 rounded-full font-medium`;
+    }
+
+    function recenterRoute() {
+      if (routePolyline) map.fitBounds(routePolyline.getBounds(), { padding: [60, 60] });
+    }
+
+    function getCurrentLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (pos) {
+            pickupCoords = [pos.coords.latitude, pos.coords.longitude];
+            pickupMarker.setLatLng(pickupCoords);
+            reverseGeocode(pickupCoords, 'pickup-input');
+            map.setView(pickupCoords, 14);
+            updateRouteAndPricing();
+          },
+          function () {
+            alert('ไม่สามารถดึง GPS ได้ กรุณาเปิดสิทธิ์ระบุตำแหน่ง');
+          }
+        );
+      }
+    }
+
+    // 7. ค้นหาสถานที่จริง (Nominatim API)
+    let searchTimeout;
+    function debounceSearch(type, query) {
+      clearTimeout(searchTimeout);
+      if (!query || query.length < 2) {
+        document.getElementById(`${type}-results`).classList.add('hidden');
+        return;
+      }
+      searchTimeout = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' Thailand')}&limit=4`)
+          .then(res => res.json())
+          .then(data => {
+            const resultsBox = document.getElementById(`${type}-results`);
+            resultsBox.innerHTML = '';
+            if (data.length > 0) {
+              resultsBox.classList.remove('hidden');
+              data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'p-2.5 text-xs text-slate-200 hover:bg-slate-800 border-b border-slate-800 cursor-pointer';
+                div.innerText = item.display_name.split(',').slice(0, 3).join(',');
+                div.onclick = () => {
+                  document.getElementById(`${type}-input`).value = div.innerText;
+                  resultsBox.classList.add('hidden');
+                  if (type === 'pickup') {
+                    pickupCoords = [parseFloat(item.lat), parseFloat(item.lon)];
+                    pickupMarker.setLatLng(pickupCoords);
+                  } else {
+                    dropoffCoords = [parseFloat(item.lat), parseFloat(item.lon)];
+                    dropoffMarker.setLatLng(dropoffCoords);
+                  }
+                  map.setView(type === 'pickup' ? pickupCoords : dropoffCoords, 14);
+                  updateRouteAndPricing();
+                };
+                resultsBox.appendChild(div);
+              });
+            } else {
+              resultsBox.classList.add('hidden');
+            }
+          });
+      }, 500);
+    }
+
+    function reverseGeocode(coords, inputId) {
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords[0]}&lon=${coords[1]}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.display_name) {
+            document.getElementById(inputId).value = data.display_name.split(',').slice(0, 2).join(',');
+          }
+        })
+        .catch(() => {});
+    }
+
+    // 8. ยืนยันการจอง
+    function bookNow() {
+      const modeTitle = activeServiceMode === 'party' ? '🍻 เมาไม่ขับ (ส่งกลับบ้าน)' : activeServiceMode === 'tour' ? `🚗 คนขับนำเที่ยว (${selectedHoursCount} ชม.)` : `💼 ธุระทั่วไป (${selectedHoursCount} ชม.)`;
+      const p = document.getElementById('pickup-input').value;
+      const d = document.getElementById('dropoff-input').value;
+      const fare = document.getElementById('final-fare').innerText;
+      const gear = document.getElementById('gear-select').value;
+      const tier = selectedTier === 'standard' ? 'เก๋งทั่วไป/EV' : selectedTier === 'luxury' ? 'รถยุโรป/SUV' : 'รถตู้ VIP';
+      const driver = drivers[selectedGender].name;
+
+      const msg = `จองบริการคนขับรถส่วนตัว:\n• รูปแบบงาน: ${modeTitle}\n• จุดรับ: ${p}\n• จุดส่ง/จุดเที่ยว: ${d}\n• รถลูกค้า: ${tier} (เกียร์ ${gear})\n• คนขับที่จัดสรร: ${driver}\n• ยอดชำระ: ${fare}\n\nระบบกำลังส่งข้อมูลเพื่อจับคู่คนขับผ่าน LINE OA...`;
+
+      alert(msg);
+    }
+
+    window.addEventListener('DOMContentLoaded', initMap);
   </script>
 </body>
 </html>
