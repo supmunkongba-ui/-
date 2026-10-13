@@ -6,94 +6,309 @@
   <title>แอปพนักงานขับรถ — พากลับ</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>body { font-family: 'Prompt', sans-serif; background: #050B14; color: #f1f5f9; }</style>
+  <style>
+    body { font-family: 'Prompt', sans-serif; background: #050B14; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+    .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+  </style>
 </head>
-<body class="pb-16 relative">
+<body class="pb-24 relative selection:bg-amber-500 selection:text-black">
 
   <!-- ปุ่ม SOS ฉุกเฉิน (ลอยอยู่มุมล่างซ้าย) -->
-  <button onclick="alert('🚨 ส่งพิกัด GPS ปัจจุบันให้ตำรวจและแอดมินเรียบร้อยแล้ว!')" class="fixed bottom-4 left-4 z-50 w-14 h-14 bg-rose-600 border-2 border-rose-400 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(225,29,72,0.5)] active:scale-90 transition">
+  <button onclick="triggerSOS()" class="fixed bottom-6 left-4 z-50 w-14 h-14 bg-rose-600 border-2 border-rose-400 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(225,29,72,0.5)] active:scale-90 transition">
     <span class="text-white font-black text-xs">SOS</span>
   </button>
 
-  <header class="bg-[#070E1B] border-b border-slate-800 px-4 h-16 flex items-center justify-between z-40 sticky top-0">
-    <div class="font-bold text-white text-sm">📋 แผงควบคุมคนขับ (DRV-045)</div>
+  <!-- Header -->
+  <header class="bg-[#070E1B]/95 backdrop-blur-md border-b border-slate-800 px-4 h-16 flex items-center justify-between z-40 sticky top-0">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping absolute"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+      </div>
+      <div>
+        <div class="font-bold text-white text-sm">รหัสคนขับ: DRV-045</div>
+        <div class="text-[10px] text-emerald-400">สถานะ: ออนไลน์พร้อมรับงาน</div>
+      </div>
+    </div>
+    <button onclick="location.reload()" class="text-[10px] bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">รีเฟรช</button>
   </header>
 
   <main class="p-4 max-w-xl mx-auto space-y-4">
     
-    <!-- 1. การรับงาน -->
-    <div id="step-accept" class="bg-[#0C1527] border border-amber-500/50 rounded-2xl p-4 shadow-xl text-center space-y-3">
-      <div class="text-xs text-amber-400 font-bold animate-pulse">🎯 มีงานจ่ายมาให้คุณ!</div>
-      <div class="text-sm font-bold">รับลูกค้า: ทองหล่อ 10 ➡️ ส่ง: อารีย์</div>
-      <div class="flex gap-2">
-        <button onclick="acceptJob()" class="flex-1 bg-amber-500 text-black font-bold py-3 rounded-xl text-xs">✅ กดรับงานนี้</button>
-        <button onclick="alert('ปฏิเสธงานแล้ว แอดมินกำลังหาคนใหม่')" class="px-4 bg-slate-800 text-slate-400 rounded-xl text-xs">❌ ไม่สะดวก</button>
-      </div>
-    </div>
+    <!-- ============================================== -->
+    <!-- STEP 1: การ์ดรับงาน (Job Offer) -->
+    <!-- ============================================== -->
+    <div id="step-accept" class="bg-[#0C1527] border-2 border-amber-500/50 rounded-3xl p-5 shadow-[0_0_25px_rgba(245,158,11,0.15)] relative overflow-hidden">
+      <!-- แถบสีด้านบน -->
+      <div class="absolute top-0 left-0 w-full h-1.5 gold-gradient"></div>
 
-    <!-- 2. ตรวจรับรถ (ซ่อนไว้ก่อนรับงาน) -->
-    <div id="step-inspect" class="hidden space-y-4">
-      <div class="bg-[#0C1527] border border-slate-800 rounded-2xl p-4 space-y-3">
-        <div class="text-xs font-bold text-amber-400 border-b border-slate-800 pb-2">1. ถ่ายรูปสภาพรถ 4 มุม & เลขไมล์</div>
-        <div class="grid grid-cols-2 gap-2 text-xs">
-          <label class="flex items-center justify-center h-20 rounded-xl border border-slate-700 bg-[#070D1A]">หน้า<input type="file" accept="image/*" capture class="hidden"/></label>
-          <label class="flex items-center justify-center h-20 rounded-xl border border-slate-700 bg-[#070D1A]">หลัง<input type="file" accept="image/*" capture class="hidden"/></label>
-          <label class="flex items-center justify-center h-20 rounded-xl border border-slate-700 bg-[#070D1A]">ซ้าย<input type="file" accept="image/*" capture class="hidden"/></label>
-          <label class="flex items-center justify-center h-20 rounded-xl border border-slate-700 bg-[#070D1A]">ขวา<input type="file" accept="image/*" capture class="hidden"/></label>
+      <div class="text-center mb-4 pt-1">
+        <div class="inline-block px-3 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-bold rounded-full mb-2 animate-pulse">
+          🚨 แอดมินจ่ายงานใหม่ให้คุณ!
         </div>
-        <input type="text" placeholder="ระบุของมีค่าบนรถ..." class="w-full bg-[#070D1A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+        <h2 class="text-xl font-black text-white" id="job-id-display">#PK-206</h2>
       </div>
 
-      <div class="bg-[#0C1527] border border-slate-800 rounded-2xl p-4 space-y-2">
-        <div class="text-xs font-bold text-amber-400">2. ลูกค้าเซ็นรับสภาพรถ</div>
-        <canvas id="sig-pad" class="w-full h-24 bg-[#070D1A] border border-slate-700 rounded-xl touch-none"></canvas>
-        <button onclick="startTrip()" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl text-xs">🚀 ยืนยันผลตรวจ & เริ่มเดินทาง</button>
+      <!-- ข้อมูลงานแบบละเอียด -->
+      <div class="space-y-3 bg-[#070D1A] rounded-2xl p-4 border border-slate-800/80">
+        
+        <!-- ลูกค้า & ติดต่อ -->
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <div>
+            <div class="text-[10px] text-slate-400">ลูกค้า</div>
+            <div class="text-sm font-bold text-amber-400" id="job-customer">คุณแพรว</div>
+          </div>
+          <a href="#" id="job-phone-link" class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 transition">
+            📞 <span id="job-phone">081-999-XXXX</span>
+          </a>
+        </div>
+
+        <!-- รายละเอียดรถและบริการ -->
+        <div class="grid grid-cols-2 gap-2 text-xs border-b border-slate-800/80 pb-3">
+          <div><span class="text-slate-500 block text-[10px]">ประเภทงาน:</span><span class="text-white font-medium" id="job-type">เรียกใช้งานด่วน</span></div>
+          <div><span class="text-slate-500 block text-[10px]">บริการ:</span><span class="text-white font-medium" id="job-service">เมาไม่ขับ</span></div>
+          <div class="col-span-2"><span class="text-slate-500 block text-[10px]">ประเภทรถ:</span><span class="text-cyan-400 font-bold" id="job-gear">เกียร์ออโต้</span></div>
+        </div>
+
+        <!-- จุดรับ-ส่ง -->
+        <div class="space-y-2 relative">
+          <div class="absolute left-1.5 top-5 bottom-5 w-0.5 border-l-2 border-dashed border-slate-700"></div>
+          
+          <div class="flex items-start gap-3">
+            <span class="w-3.5 h-3.5 rounded-full bg-amber-500 flex shrink-0 mt-0.5 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
+            <div class="flex-1">
+              <div class="text-[10px] text-amber-400 font-bold">รับที่:</div>
+              <div class="text-xs text-white font-medium leading-tight" id="job-pickup">เดอะคอมมอนส์ ทองหล่อ ซอย 10</div>
+            </div>
+            <a href="#" id="job-map-link" target="_blank" class="shrink-0 bg-slate-800 border border-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg text-[10px] font-bold">
+              📍 เปิด GPS
+            </a>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 flex shrink-0 mt-0.5"></span>
+            <div>
+              <div class="text-[10px] text-emerald-400 font-bold">ส่งที่:</div>
+              <div class="text-xs text-slate-300 font-medium leading-tight" id="job-dropoff">คอนโด IDEO อารีย์ พหลโยธิน</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ค่าบริการ -->
+        <div class="bg-amber-500/10 rounded-xl p-2.5 flex justify-between items-center mt-2 border border-amber-500/20">
+          <span class="text-xs text-slate-300 font-semibold">ยอดเก็บลูกค้าปลายทาง:</span>
+          <span class="text-lg font-black text-amber-400" id="job-fare">490 บาท</span>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-4">
+        <button onclick="acceptJob()" class="flex-1 gold-gradient text-slate-950 font-black py-3.5 rounded-xl text-sm shadow-lg active:scale-95 transition">
+          ✅ ยืนยันรับงาน
+        </button>
+        <button onclick="rejectJob()" class="px-5 bg-slate-800 border border-slate-700 text-slate-400 font-bold rounded-xl text-xs active:scale-95">
+          ❌ ปฏิเสธ
+        </button>
       </div>
     </div>
 
-    <!-- 3. จบงานและเก็บเงิน (ซ่อนไว้ก่อนเริ่มทาง) -->
-    <div id="step-payment" class="hidden bg-[#0C1527] border border-emerald-500/50 rounded-2xl p-4 space-y-3 text-center">
-      <div class="text-xs text-emerald-400 font-bold">🏁 ถึงจุดหมายเรียบร้อย</div>
-      <div class="text-sm font-black">ยอดเรียกเก็บลูกค้า: 490 บาท</div>
+    <!-- ============================================== -->
+    <!-- STEP 2: ตรวจสภาพรถ (Digital Inspection) -->
+    <!-- ============================================== -->
+    <div id="step-inspect" class="hidden space-y-4">
       
-      <label class="block flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-emerald-500/30 bg-[#070D1A] cursor-pointer">
-        <input type="file" accept="image/*" class="hidden" onchange="document.getElementById('slip-label').innerText = '✅ อัปโหลดสลิปสำเร็จ'" />
-        <span id="slip-label" class="text-emerald-400 text-xs font-bold">📸 ถ่ายรูปสลิปโอนเงิน / กดเงินสด</span>
+      <!-- Mini Header เตือนความจำ -->
+      <div class="bg-[#070D1A] border border-slate-800 rounded-2xl p-3 flex justify-between items-center">
+        <div>
+          <div class="text-[10px] text-slate-400">กำลังปฏิบัติงาน</div>
+          <div class="text-xs font-bold text-amber-400">ลูกค้า: <span id="inspect-customer">คุณแพรว</span></div>
+        </div>
+        <a href="#" id="inspect-phone" class="text-[10px] bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">📞 โทรหาลูกค้า</a>
+      </div>
+
+      <!-- ฟอร์มตรวจรถ -->
+      <div class="bg-[#0C1527] border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span class="text-xs font-bold text-amber-400 uppercase">1. บันทึกภาพ 4 มุม & เลขไมล์</span>
+          <span class="text-[10px] text-emerald-400 font-medium">📷 แตะเพื่อถ่าย</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <label class="flex flex-col items-center justify-center h-20 rounded-xl border-2 border-dashed border-slate-700 bg-[#070D1A] hover:border-amber-400/50 relative overflow-hidden">
+            <span class="text-slate-400 text-[10px]">หน้ารถ</span>
+            <input type="file" accept="image/*" capture class="hidden" onchange="previewSmall(this)"/>
+          </label>
+          <label class="flex flex-col items-center justify-center h-20 rounded-xl border-2 border-dashed border-slate-700 bg-[#070D1A] hover:border-amber-400/50 relative overflow-hidden">
+            <span class="text-slate-400 text-[10px]">ท้ายรถ</span>
+            <input type="file" accept="image/*" capture class="hidden" onchange="previewSmall(this)"/>
+          </label>
+          <label class="flex flex-col items-center justify-center h-20 rounded-xl border-2 border-dashed border-slate-700 bg-[#070D1A] hover:border-amber-400/50 relative overflow-hidden">
+            <span class="text-slate-400 text-[10px]">ซ้าย</span>
+            <input type="file" accept="image/*" capture class="hidden" onchange="previewSmall(this)"/>
+          </label>
+          <label class="flex flex-col items-center justify-center h-20 rounded-xl border-2 border-dashed border-slate-700 bg-[#070D1A] hover:border-amber-400/50 relative overflow-hidden">
+            <span class="text-slate-400 text-[10px]">ขวา</span>
+            <input type="file" accept="image/*" capture class="hidden" onchange="previewSmall(this)"/>
+          </label>
+          <label class="col-span-2 flex flex-col items-center justify-center h-16 rounded-xl border-2 border-dashed border-slate-700 bg-[#070D1A] hover:border-amber-400/50 relative overflow-hidden">
+            <span class="text-slate-400 text-[10px]">🚘 หน้าปัดเลขไมล์ & ระดับน้ำมัน</span>
+            <input type="file" accept="image/*" capture class="hidden" onchange="previewSmall(this)"/>
+          </label>
+        </div>
+
+        <div class="space-y-2">
+          <input type="text" placeholder="ระบุของมีค่าบนรถที่พบร่วมกับลูกค้า..." class="w-full bg-[#070D1A] border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none" />
+          <input type="text" placeholder="ตำหนิเดิมที่มีก่อนขับ (ถ้ามี)..." class="w-full bg-[#070D1A] border border-slate-700 focus:border-rose-400 rounded-xl px-3 py-2 text-xs text-rose-300 outline-none" />
+        </div>
+      </div>
+
+      <!-- ลายเซ็น -->
+      <div class="bg-[#0C1527] border border-slate-800 rounded-3xl p-5 space-y-3 shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span class="text-xs font-bold text-amber-400 uppercase">2. ลายเซ็นลูกค้ายืนยัน</span>
+          <button onclick="clearCanvas()" class="text-[10px] text-slate-500 hover:text-white underline">ล้างลายเซ็น</button>
+        </div>
+        <p class="text-[10px] text-slate-400">ให้ลูกค้าเซ็นรับทราบสภาพรถก่อนเริ่มออกเดินทาง</p>
+        
+        <canvas id="sig-pad" class="w-full h-32 bg-[#070D1A] border border-slate-700 rounded-xl touch-none"></canvas>
+        
+        <button onclick="startTrip()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3.5 rounded-xl text-sm shadow-[0_0_15px_rgba(8,145,178,0.3)] transition active:scale-95">
+          🚀 ยืนยันผลตรวจ & เริ่มเดินทาง
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- STEP 3: จบงาน & อัปโหลดสลิป -->
+    <!-- ============================================== -->
+    <div id="step-payment" class="hidden bg-[#0C1527] border-2 border-emerald-500/50 rounded-3xl p-6 space-y-5 text-center shadow-[0_0_25px_rgba(16,185,129,0.15)] relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-1.5 bg-emerald-500"></div>
+      
+      <div>
+        <div class="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-2 text-2xl">🏁</div>
+        <h2 class="text-lg font-black text-white">ถึงจุดหมายเรียบร้อย</h2>
+        <p class="text-xs text-slate-400 mt-1">ส่งลูกค้าถึงบ้านอย่างปลอดภัย คืนกุญแจรถ</p>
+      </div>
+
+      <div class="bg-[#070D1A] border border-slate-800 rounded-2xl p-4">
+        <div class="text-[11px] text-slate-400 mb-1">ยอดรวมที่ต้องเรียกเก็บจากลูกค้า:</div>
+        <div class="text-3xl font-black text-amber-400" id="final-collect-fare">490.-</div>
+      </div>
+      
+      <label class="block flex flex-col items-center justify-center h-32 rounded-2xl border-2 border-dashed border-emerald-500/30 bg-[#070D1A] cursor-pointer hover:border-emerald-500/60 transition">
+        <input type="file" accept="image/*" class="hidden" onchange="document.getElementById('slip-label').innerHTML = '✅ อัปโหลดสลิปสำเร็จแล้ว<br><span class=\'text-[10px] text-slate-400 font-normal\'>แตะเพื่อเปลี่ยนรูป</span>'" />
+        <span id="slip-label" class="text-emerald-400 text-xs font-bold text-center">
+          <span class="text-2xl block mb-1">📸</span>
+          ถ่ายรูปสลิปโอนเงิน / กดเงินสด
+        </span>
       </label>
 
-      <button onclick="completeJob()" class="w-full bg-emerald-500 text-slate-950 font-black py-4 rounded-xl text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-        ✅ ปิดจ๊อบงานนี้
+      <button onclick="completeJob()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-4 rounded-xl text-sm shadow-[0_0_15px_rgba(16,185,129,0.4)] transition active:scale-95">
+        ✅ ปิดจ๊อบส่งงานให้บัญชี
       </button>
     </div>
 
   </main>
 
   <script>
+    // ข้อมูลจำลองเมื่อแอดมินจ่ายงานมา
+    const mockJobData = {
+      id: "#PK-206",
+      customer: "คุณแพรว",
+      phone: "081-999-8888",
+      type: "เรียกใช้งานด่วน (Now)",
+      service: "เมาไม่ขับ",
+      gear: "เกียร์ออโต้",
+      pickup: "เดอะคอมมอนส์ ทองหล่อ ซอย 10",
+      dropoff: "คอนโด IDEO อารีย์ พหลโยธิน",
+      fare: "490 บาท",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=13.7340,100.5820"
+    };
+
+    // จำลองการโหลดข้อมูลขึ้นหน้าจอ
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('job-id-display').innerText = mockJobData.id;
+      document.getElementById('job-customer').innerText = mockJobData.customer;
+      document.getElementById('job-phone').innerText = mockJobData.phone;
+      document.getElementById('job-phone-link').href = `tel:${mockJobData.phone.replace(/-/g, '')}`;
+      document.getElementById('job-type').innerText = mockJobData.type;
+      document.getElementById('job-service').innerText = mockJobData.service;
+      document.getElementById('job-gear').innerText = mockJobData.gear;
+      document.getElementById('job-pickup').innerText = mockJobData.pickup;
+      document.getElementById('job-dropoff').innerText = mockJobData.dropoff;
+      document.getElementById('job-fare').innerText = mockJobData.fare;
+      document.getElementById('job-map-link').href = mockJobData.mapUrl;
+    });
+
+    // แสดงพรีวิวรูปเล็กๆ ตอนตรวจรถ
+    function previewSmall(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          input.parentElement.style.backgroundImage = `url('${e.target.result}')`;
+          input.parentElement.style.backgroundSize = 'cover';
+          input.parentElement.style.backgroundPosition = 'center';
+          input.parentElement.querySelector('span').style.background = 'rgba(0,0,0,0.6)';
+          input.parentElement.querySelector('span').style.padding = '2px 6px';
+          input.parentElement.querySelector('span').style.borderRadius = '4px';
+        }
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    // จัดการลายเซ็น
+    let canvas, ctx, isDrawing = false;
+    function initCanvas() {
+      canvas = document.getElementById('sig-pad');
+      ctx = canvas.getContext('2d');
+      // แก้ไขปัญหาขนาด Canvas ไม่ตรงกับมือถือ
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width; canvas.height = rect.height;
+      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+      
+      canvas.addEventListener('touchstart', (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }, {passive:false});
+      canvas.addEventListener('touchmove', (e) => { if(!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }, {passive:false});
+      canvas.addEventListener('touchend', () => isDrawing = false);
+    }
+    
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    // Flow การทำงาน
     function acceptJob() {
       document.getElementById('step-accept').classList.add('hidden');
       document.getElementById('step-inspect').classList.remove('hidden');
-      alert("ระบบได้แจ้งลูกค้าแล้วว่าคุณกำลังเดินทางไปจุดรับ");
-      
-      // Canvas Setup
-      const canvas = document.getElementById('sig-pad');
-      const ctx = canvas.getContext('2d');
-      canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
-      let isDrawing = false;
-      canvas.addEventListener('touchstart', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.touches[0].clientX - canvas.getBoundingClientRect().left, e.touches[0].clientY - canvas.getBoundingClientRect().top); e.preventDefault(); }, {passive:false});
-      canvas.addEventListener('touchmove', (e) => { if(isDrawing){ ctx.lineTo(e.touches[0].clientX - canvas.getBoundingClientRect().left, e.touches[0].clientY - canvas.getBoundingClientRect().top); ctx.stroke(); } e.preventDefault(); }, {passive:false});
-      canvas.addEventListener('touchend', () => isDrawing = false);
+      document.getElementById('inspect-customer').innerText = mockJobData.customer;
+      document.getElementById('inspect-phone').href = `tel:${mockJobData.phone.replace(/-/g, '')}`;
+      alert("✅ รับงานเรียบร้อย ระบบได้ส่งข้อความแจ้งลูกค้าแล้วว่าคุณกำลังเดินทางไปจุดรับ");
+      initCanvas();
+    }
+
+    function rejectJob() {
+      if(confirm("แน่ใจหรือไม่ว่าต้องการปฏิเสธงานนี้?")) {
+        alert("คุณปฏิเสธงาน ระบบกำลังหาคนขับคันใหม่ให้ลูกค้า");
+        document.getElementById('step-accept').innerHTML = `<div class="text-slate-400 text-center py-10">สแตนด์บายรอรับงานถัดไป...</div>`;
+      }
     }
 
     function startTrip() {
       document.getElementById('step-inspect').classList.add('hidden');
       document.getElementById('step-payment').classList.remove('hidden');
-      alert("ส่งข้อมูลเข้ากลุ่ม LINE แจ้งแอดมินเรียบร้อย\nขอให้เดินทางปลอดภัยครับ!");
+      document.getElementById('final-collect-fare').innerText = mockJobData.fare;
+      alert("🚀 ยืนยันผลตรวจสภาพรถและส่งข้อมูลเข้ากลุ่ม LINE เรียบร้อย\nขอให้เดินทางปลอดภัยครับ!");
     }
 
     function completeJob() {
-      alert("✅ จบงานสมบูรณ์แบบ! ข้อมูลสลิปถูกส่งให้บัญชีเรียบร้อย คุณกลับสู่สถานะสแตนด์บาย");
+      alert("✅ ปิดจ๊อบสมบูรณ์แบบ! ข้อมูลสลิปถูกส่งให้บัญชีเรียบร้อย คุณกลับสู่สถานะสแตนด์บาย (ว่าง)");
       location.reload();
+    }
+
+    function triggerSOS() {
+      alert('🚨 กดปุ่มฉุกเฉินแล้ว!\nระบบได้ส่งพิกัด GPS ปัจจุบันและแจ้งเตือนไปยัง แอดมิน และ เพื่อนคนขับที่ใกล้ที่สุดเรียบร้อยแล้ว');
     }
   </script>
 </body>
