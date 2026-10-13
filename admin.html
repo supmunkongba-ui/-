@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ระบบศูนย์บัญชาการแอดมิน — Real-Time Fleet & Dispatch</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    body { font-family: 'Prompt', sans-serif; }
+    .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .leaflet-tile { filter: brightness(0.65) invert(1) contrast(2.5) hue-rotate(200deg) saturate(0.25) brightness(0.75); }
+    .leaflet-container { background: #070d1a !important; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-[#050B14] text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-black">
+
+  <!-- 1. Login Modal (ป้องกันไม่ให้คนนอกเข้า) -->
+  <div id="login-modal" class="fixed inset-0 bg-[#050B14] z-50 flex items-center justify-center p-4">
+    <div class="bg-[#0C1527] border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+      <div class="w-12 h-12 rounded-2xl gold-gradient flex items-center justify-center font-black text-slate-950 text-xl mx-auto shadow-lg shadow-amber-500/20">
+        U
+      </div>
+      <div>
+        <h2 class="text-lg font-bold text-white">ศูนย์บัญชาการแอดมิน</h2>
+        <p class="text-xs text-slate-400 mt-1">กรุณาระบุรหัสผ่าน PIN เพื่อเข้าสู่ระบบ</p>
+      </div>
+
+      <div class="space-y-3">
+        <input 
+          type="password" 
+          id="pin-input" 
+          maxlength="6" 
+          placeholder="ใส่รหัสผ่าน (ค่าเริ่มต้น 1234)" 
+          class="w-full bg-[#070D1A] border border-slate-700 rounded-xl px-4 py-3 text-center text-lg tracking-widest text-white focus:outline-none focus:border-amber-400"
+          onkeypress="if(event.key === 'Enter') checkLogin()"
+        />
+        <div id="login-error" class="text-xs text-rose-400 hidden">รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง</div>
+        <button onclick="checkLogin()" class="w-full gold-gradient hover:opacity-95 text-slate-950 font-bold py-3 rounded-xl text-xs shadow-md transition active:scale-95">
+          เข้าสู่ระบบ (Login)
+        </button>
+      </div>
+      <a href="index.html" class="text-[11px] text-slate-500 hover:text-slate-300 block">← กลับไปยังหน้าลูกค้า</a>
+    </div>
+  </div>
+
+  <!-- 2. Main Admin Dashboard -->
+  <header class="bg-[#070E1B] border-b border-slate-800 px-4 md:px-6 h-16 flex items-center justify-between z-20">
+    <div class="flex items-center gap-3">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+      <div>
+        <h1 class="text-sm md:text-base font-bold text-white">ระบบติดตามคนขับสด (Admin Fleet Live)</h1>
+        <div class="text-[10px] text-slate-400">มอนิเตอร์พิกัด GPS, ความเร็ว และกล้อง Body Cam</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="location.reload()" class="px-3 py-1.5 bg-slate-900 border border-slate-700 hover:border-slate-500 rounded-xl text-xs text-slate-300">
+        🔄 รีเฟรช
+      </button>
+      <button onclick="logout()" class="px-3 py-1.5 bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-xl text-xs hover:bg-rose-500/20">
+        ออกจากระบบ
+      </button>
+    </div>
+  </header>
+
+  <!-- Content Layout: แผนที่ + แผงคนขับด้านข้าง -->
+  <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+    
+    <!-- แผนที่แสดงพิกัดคนขับทุกคนสด -->
+    <div id="admin-map" class="flex-1 h-[55vh] md:h-full z-10"></div>
+
+    <!-- แผงด้านข้าง: สรุปสถานะ Fleet & รายชื่อคนขับ -->
+    <div class="w-full md:w-96 bg-[#0A1324] border-t md:border-t-0 md:border-l border-slate-800 p-4 overflow-y-auto space-y-3.5 z-20">
+      
+      <!-- การ์ดสรุปสถานะทีม -->
+      <div class="grid grid-cols-3 gap-2 text-center text-xs">
+        <div class="p-2.5 rounded-xl bg-[#070D1A] border border-emerald-500/30">
+          <span class="text-[10px] text-emerald-400 block font-semibold">🟢 ว่าง (Standby)</span>
+          <span id="stat-standby" class="text-base font-black text-white">2</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-[#070D1A] border border-amber-500/30">
+          <span class="text-[10px] text-amber-400 block font-semibold">🟡 กำลังไปรับ</span>
+          <span id="stat-heading" class="text-base font-black text-white">1</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-[#070D1A] border border-cyan-500/30">
+          <span class="text-[10px] text-cyan-400 block font-semibold">🔵 กำลังส่งงาน</span>
+          <span id="stat-trip" class="text-base font-black text-white">1</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between text-xs text-slate-400 font-semibold border-b border-slate-800 pb-2">
+        <span>รายชื่อพนักงานขับรถ</span>
+        <span class="text-[10px] text-emerald-400">อัปเดตสดทุก 3 วิ ⚡</span>
+      </div>
+
+      <!-- รายการคนขับ -->
+      <div id="driver-cards-container" class="space-y-2.5"></div>
+    </div>
+  </div>
+
+  <script>
+    // 1. ระบบความปลอดภัย PIN Authentication
+    const ADMIN_PIN = "1234"; // เปลี่ยนรหัสผ่านแอดมินตรงนี้
+
+    function checkLogin() {
+      const pin = document.getElementById('pin-input').value;
+      if (pin === ADMIN_PIN) {
+        document.getElementById('login-modal').classList.add('hidden');
+        sessionStorage.setItem('admin_auth', 'true');
+        initAdminMap();
+      } else {
+        document.getElementById('login-error').classList.remove('hidden');
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('admin_auth');
+      location.reload();
+    }
+
+    // ตรวจสอบสถานะการล็อกอินอัตโนมัติ
+    if (sessionStorage.getItem('admin_auth') === 'true') {
+      document.getElementById('login-modal').classList.add('hidden');
+      window.addEventListener('DOMContentLoaded', initAdminMap);
+    }
+
+    // 2. Data Store: ทีมคนขับและพิกัดจำลอง
+    let fleet = [
+      { id: "DRV-045", name: "เกรียงศักดิ์ สุขสวัสดิ์", phone: "081-234-5678", status: "STANDBY", coords: [13.7330, 100.5840], speed: 0, battery: "92%", currentTask: "สแตนด์บาย ทองหล่อ ซอย 10" },
+      { id: "DRV-104", name: "วิภาดา รักษาความปลอดภัย", phone: "089-876-5432", status: "STANDBY", coords: [13.7275, 100.5860], speed: 0, battery: "88%", currentTask: "สแตนด์บาย เอกมัย สุขุมวิท 63" },
+      { id: "DRV-082", name: "สมชาย มั่นคง", phone: "086-555-1122", status: "HEADING", coords: [13.7510, 100.5735], speed: 38, battery: "74%", currentTask: "ไปรับลูกค้าที่ RCA พระราม 9" },
+      { id: "DRV-019", name: "ณัฐวุฒิ ปลอดภัยดี", phone: "090-333-4455", status: "IN_TRIP", coords: [13.7850, 100.5600], speed: 65, battery: "65%", currentTask: "ขับรถลูกค้าไปส่งที่ ลาดพร้าว" }
+    ];
+
+    let adminMap;
+    let markers = {};
+
+    function initAdminMap() {
+      if (adminMap) return;
+      adminMap = L.map('admin-map', { zoomControl: false }).setView([13.7563, 100.5638], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(adminMap);
+
+      renderFleetUI();
+      setInterval(simulateMovement, 3000);
+    }
+
+    function renderFleetUI() {
+      const container = document.getElementById('driver-cards-container');
+      container.innerHTML = '';
+
+      let countStandby = 0, countHeading = 0, countTrip = 0;
+
+      fleet.forEach(d => {
+        if (d.status === 'STANDBY') countStandby++;
+        if (d.status === 'HEADING') countHeading++;
+        if (d.status === 'IN_TRIP') countTrip++;
+
+        let badge = d.status === 'STANDBY' 
+          ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">🟢 STANDBY</span>'
+          : d.status === 'HEADING'
+          ? '<span class="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">🟡 HEADING</span>'
+          : '<span class="text-[10px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-bold">🔵 IN_TRIP</span>';
+
+        container.innerHTML += `
+          <div class="p-3 bg-[#070D1A] border border-slate-800 rounded-2xl space-y-2 hover:border-slate-700 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white">${d.name} (${d.id})</span>
+              ${badge}
+            </div>
+            <div class="text-[11px] text-slate-300">📍 ${d.currentTask}</div>
+            <div class="flex items-center justify-between text-[10px] text-slate-400 bg-slate-900/60 p-1.5 rounded-lg border border-slate-800/80">
+              <span>ความเร็ว: <b class="text-white">${d.speed} กม./ชม.</b></span>
+              <span>แบตฯ: <b class="text-white">${d.battery}</b></span>
+              <span>📹 บันทึกสด 🟢</span>
+            </div>
+            <div class="flex gap-2 pt-1">
+              <button onclick="zoomToDriver(${d.coords[0]}, ${d.coords[1]})" class="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl text-xs font-semibold transition">
+                📍 ซูมพิกัด
+              </button>
+              <a href="tel:${d.phone}" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs transition flex items-center gap-1">
+                📞 โทร
+              </a>
+            </div>
+          </div>
+        `;
+
+        // วาด/อัปเดตหมุดบนแผนที่
+        let pinColor = d.status === 'STANDBY' ? '#10b981' : d.status === 'HEADING' ? '#f59e0b' : '#06b6d4';
+        if (!markers[d.id]) {
+          let icon = L.divIcon({
+            html: `<div style="background:${pinColor}; width:18px; height:18px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 10px ${pinColor}; display:flex; align-items:center; justify-content:center;"><div style="width:6px; height:6px; background:#fff; border-radius:50%;"></div></div>`,
+            iconSize: [18, 18],
+            iconAnchor: [9, 9]
+          });
+          markers[d.id] = L.marker(d.coords, { icon: icon }).addTo(adminMap).bindPopup(`<b>${d.name}</b><br/>สถานะ: ${d.status}<br/>ความเร็ว: ${d.speed} กม./ชม.`);
+        } else {
+          markers[d.id].setLatLng(d.coords);
+        }
+      });
+
+      document.getElementById('stat-standby').innerText = countStandby;
+      document.getElementById('stat-heading').innerText = countHeading;
+      document.getElementById('stat-trip').innerText = countTrip;
+    }
+
+    function zoomToDriver(lat, lng) {
+      adminMap.setView([lat, lng], 15);
+    }
+
+    function simulateMovement() {
+      fleet.forEach(d => {
+        if (d.status !== 'STANDBY') {
+          d.coords[0] += (Math.random() - 0.5) * 0.0012;
+          d.coords[1] += (Math.random() - 0.5) * 0.0012;
+        }
+      });
+      renderFleetUI();
+    }
+  </script>
+</body>
+</html>
