@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>พากลับ — บริการคนขับรถส่วนตัวบนรถของคุณ</title>
+  <title>พากลับ — บริการพนักงานขับรถส่วนตัวบนรถของคุณ (เมาไม่ขับ • นำเที่ยว • ธุระทั่วไป)</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Prompt -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Leaflet Map CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
@@ -22,7 +25,7 @@
 </head>
 <body class="bg-[#050B14] text-slate-100 min-h-screen pb-24 selection:bg-amber-500 selection:text-black">
 
-  <!-- 1. Header & Navigation (แสดงปุ่มเมนูทั้งบนมือถือและคอม) -->
+  <!-- 1. Header & Navigation -->
   <header class="fixed top-0 left-0 w-full bg-[#070E1B]/95 backdrop-blur-md border-b border-slate-800/80 z-40">
     <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
@@ -37,49 +40,52 @@
         </div>
       </div>
 
-      <!-- เมนูบนหน้าจอคอมพิวเตอร์ -->
+      <!-- เมนู Desktop -->
       <nav class="hidden md:flex items-center gap-6 text-xs font-medium text-slate-300">
         <a href="#booking-section" class="hover:text-amber-400 transition">เรียกรถ/คำนวณราคา</a>
         <a href="#services" class="hover:text-amber-400 transition">บริการของเรา</a>
-        <a href="#pricing" class="hover:text-amber-400 transition">ตารางค่าบริการ</a>
+        <a href="#pricing" class="hover:text-amber-400 transition">ตารางอัตราค่าบริการ</a>
         <a href="#safety" class="hover:text-amber-400 transition">มาตรฐานความปลอดภัย</a>
-        <a href="#corporate" class="hover:text-amber-400 transition">ลูกค้าองค์กร</a>
+        <a href="#corporate" class="hover:text-amber-400 transition">สำหรับองค์กร</a>
       </nav>
 
-      <!-- เมนูฝั่งขวา -->
+      <!-- ปุ่มฟังก์ชันด่วนด้านขวา -->
       <div class="flex items-center gap-2">
-        <button onclick="toggleAdminPanel()" class="px-2.5 py-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-semibold flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-          <span class="text-[11px]">แอดมิน Live</span>
+        <button onclick="openInspectionModal()" class="px-2.5 py-1.5 rounded-xl border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 text-amber-400 text-xs font-semibold flex items-center gap-1 transition">
+          <span>📋 ใบตรวจรับรถ</span>
         </button>
-        <button id="menu-btn" class="p-2 border border-slate-700 rounded-xl text-slate-200 hover:bg-slate-800 focus:outline-none">
+        <button onclick="toggleAdminPanel()" class="px-2.5 py-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span>ศูนย์แอดมิน</span>
+        </button>
+        <button id="menu-btn" class="md:hidden p-2 border border-slate-700/80 rounded-lg text-slate-200 hover:bg-slate-800 focus:outline-none">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
       </div>
     </div>
 
-    <!-- Dropdown Menu เมื่อกดปุ่ม Hamburger (กดเปิด-ปิดได้ทั้งมือถือและคอม) -->
-    <div id="mobile-menu" class="hidden bg-[#070E1B] border-b border-slate-800 px-6 py-4 space-y-2.5">
-      <a href="#booking-section" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/60">📍 เรียกรถและคำนวณราคา (แผนที่)</a>
-      <a href="#services" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/60">🚗 บริการของเรา 6 รูปแบบ</a>
-      <a href="#pricing" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/60">💰 ตารางอัตราค่าบริการ (เริ่มต้น 390.-)</a>
-      <a href="#safety" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/60">🛡️ มาตรฐานความปลอดภัย 9 ข้อ</a>
-      <a href="#corporate" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5">🏢 บริการสำหรับลูกค้าองค์กร (B2B)</a>
+    <!-- Dropdown เมนูบนมือถือ -->
+    <div id="mobile-menu" class="hidden md:hidden bg-[#070E1B] border-b border-slate-800 px-6 py-4 space-y-3">
+      <a href="#booking-section" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/50">📍 เรียกรถ/คำนวณราคา (แผนที่)</a>
+      <a href="#services" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/50">🚗 บริการของเรา 6 รูปแบบ</a>
+      <a href="#pricing" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/50">💰 ตารางอัตราค่าบริการ (เริ่มต้น 390.-)</a>
+      <a href="#safety" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5 border-b border-slate-800/50">🛡️ มาตรฐานความปลอดภัย 9 ข้อ</a>
+      <a href="#corporate" class="mobile-link block text-sm text-slate-200 hover:text-amber-400 py-1.5">🏢 สำหรับลูกค้าองค์กร (B2B)</a>
     </div>
   </header>
 
-  <!-- 2. Admin Live Dispatch Console -->
+  <!-- 2. Admin Live Dispatch Console (แผงควบคุมแอดมิน) -->
   <section id="admin-panel" class="hidden fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-50 p-4 md:p-6 overflow-y-auto pt-20">
     <div class="max-w-5xl mx-auto space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <div>
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-            <h2 class="text-lg md:text-xl font-bold text-white tracking-tight">ศูนย์ตรวจสอบคนขับแบบเรียลไทม์ (Admin Console)</h2>
+            <h2 class="text-lg md:text-xl font-bold text-white tracking-tight">ศูนย์ควบคุมและติดตามคนขับแบบเรียลไทม์ (Admin Fleet Console)</h2>
           </div>
           <p class="text-xs text-slate-400 mt-0.5">มอนิเตอร์พิกัด GPS, ความเร็ว, กล้อง Body Cam และสถานะงานของพนักงานทุกคน</p>
         </div>
-        <button onclick="toggleAdminPanel()" class="px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200">
+        <button onclick="toggleAdminPanel()" class="px-3.5 py-1.5 bg-slate-900 border border-slate-700 hover:border-slate-500 rounded-xl text-xs text-slate-200">
           ✕ ปิดหน้าต่างแอดมิน
         </button>
       </div>
@@ -94,11 +100,11 @@
           <span class="text-lg font-black text-emerald-300" id="adm-count-standby">2 นาย</span>
         </div>
         <div class="bg-[#0C1527] border border-amber-500/30 bg-amber-500/5 p-3 rounded-2xl">
-          <span class="text-amber-400 block text-[10px]">🟡 กำลังเดินทางไปรับ</span>
+          <span class="text-amber-400 block text-[10px]">🟡 กำลังเดินทางไปรับลูกค้า</span>
           <span class="text-lg font-black text-amber-300" id="adm-count-heading">1 นาย</span>
         </div>
         <div class="bg-[#0C1527] border border-cyan-500/30 bg-cyan-500/5 p-3 rounded-2xl">
-          <span class="text-cyan-400 block text-[10px]">🔵 กำลังขับส่งลูกค้า</span>
+          <span class="text-cyan-400 block text-[10px]">🔵 กำลังขับส่งลูกค้า (In-Trip)</span>
           <span class="text-lg font-black text-cyan-300" id="adm-count-trip">1 นาย</span>
         </div>
       </div>
@@ -106,28 +112,28 @@
       <div class="bg-[#0A1324] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
         <div class="p-3 bg-slate-900/90 border-b border-slate-800 text-xs font-semibold text-slate-300 flex justify-between items-center">
           <span>รายชื่อและพิกัดตำแหน่งของพนักงานขับรถ</span>
-          <span class="text-[10px] text-cyan-400 font-normal">อัปเดต GPS อัตโนมัติทุก 3 วินาที ⚡</span>
+          <span class="text-[10px] text-cyan-400 font-normal">ระบบรีเฟรช GPS อัตโนมัติทุก 3 วินาที ⚡</span>
         </div>
         <div class="divide-y divide-slate-800/80 text-xs" id="admin-driver-list"></div>
       </div>
     </div>
   </section>
 
-  <!-- 3. Booking Section (Interactive Map + Form) -->
+  <!-- 3. Hero & Grab-Style Interactive Booking Engine -->
   <section id="booking-section" class="relative pt-24 pb-12 px-4 border-b border-slate-900 overflow-hidden">
-    <div class="max-w-4xl mx-auto text-center relative z-10 mb-4">
+    <div class="max-w-4xl mx-auto text-center relative z-10 mb-6">
       <div class="inline-block text-amber-400 text-[11px] font-semibold tracking-widest uppercase mb-2 px-3 py-1 bg-amber-400/10 border border-amber-400/20 rounded-full">
-        EASY BOOKING & INSTANT FARE
+        YOUR CAR • OUR DRIVER PLATFORM
       </div>
       <h1 class="text-3xl md:text-5xl font-black tracking-tight mb-2 leading-tight">
         คุณใช้ชีวิต <span class="gold-text">เราพากลับบ้านปลอดภัย</span>
       </h1>
-      <p class="text-slate-300 text-xs md:text-sm max-w-xl mx-auto font-light mb-4">
-        ปักหมุดจุดรับ-จุดส่ง ทราบระยะทาง เวลาคนขับจะมาถึง และค่าบริการที่โปร่งใสทันที
+      <p class="text-slate-300 text-xs md:text-sm max-w-xl mx-auto font-light">
+        บริการคนขับรถส่วนตัวบนรถของคุณ: เมาขับเองไม่ได้ • คนขับพาเที่ยว • ธุระส่วนตัว คิดราคาตามระยะทางจริงเริ่มต้น 390.-
       </p>
 
-      <!-- แถบเมนูลัด (Quick Navigation Chips) -->
-      <div class="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-1">
+      <!-- เมนูลัด (Quick Navigation Chips) -->
+      <div class="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-2 mt-2">
         <a href="#services" class="px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-700 text-slate-300 hover:border-amber-400 text-xs font-medium whitespace-nowrap">🚗 บริการทั้งหมด</a>
         <a href="#pricing" class="px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-700 text-slate-300 hover:border-amber-400 text-xs font-medium whitespace-nowrap">💰 อัตราค่าบริการ</a>
         <a href="#safety" class="px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-700 text-slate-300 hover:border-amber-400 text-xs font-medium whitespace-nowrap">🛡️ มาตรฐานความปลอดภัย</a>
@@ -135,25 +141,31 @@
       </div>
     </div>
 
-    <!-- กล่องหลักสำหรับจองและดูแผนที่ -->
+    <!-- App Container -->
     <div class="max-w-3xl mx-auto bg-[#0C1527] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-      <div class="relative w-full h-64 md:h-72 z-10">
+      <!-- Interactive Leaflet Map -->
+      <div class="relative w-full h-72 md:h-80 z-10">
         <div id="map" class="w-full h-full"></div>
+
         <div class="absolute top-3 right-3 z-[400] flex flex-col gap-2">
-          <button onclick="getCurrentLocation()" class="p-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-amber-400 rounded-xl shadow-lg backdrop-blur flex items-center gap-1.5 text-xs font-semibold active:scale-95 transition">
+          <button onclick="getCurrentLocation()" class="p-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-amber-400 rounded-xl shadow-lg backdrop-blur flex items-center gap-1.5 text-xs font-semibold active:scale-95 transition" title="ใช้ตำแหน่งของฉัน">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke-width="2"></circle><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v3m0 14v3M2 12h3m14 0h3"></path></svg>
             <span class="hidden sm:inline">ตำแหน่งของฉัน</span>
           </button>
-          <button onclick="recenterRoute()" class="p-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl shadow-lg backdrop-blur flex items-center justify-center active:scale-95 transition">
+          <button onclick="recenterRoute()" class="p-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl shadow-lg backdrop-blur flex items-center justify-center active:scale-95 transition" title="ซูมพอดีเส้นทาง">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
           </button>
         </div>
+
         <div class="absolute bottom-3 left-3 z-[400] bg-slate-950/85 backdrop-blur text-[11px] px-3 py-1.5 rounded-lg border border-slate-800 text-slate-300">
-          💡 ลากหมุดสีส้ม (จุดรับ) และสีเขียว (จุดส่ง) เพื่อปรับพิกัดได้
+          💡 หมุดสีฟ้าบนแผนที่คือพนักงานขับรถจริงที่กำลังสแตนด์บายอยู่รอบตัวคุณ
         </div>
       </div>
 
+      <!-- Booking Card Form -->
       <form id="main-calc-form" onsubmit="event.preventDefault(); bookNow();" class="p-4 md:p-6 space-y-4 text-left">
+        
+        <!-- 1. หมวดหมู่บริการ -->
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1.5">1. เลือกประเภทบริการที่คุณต้องการ</label>
           <div class="grid grid-cols-3 gap-2">
@@ -175,6 +187,7 @@
           </div>
         </div>
 
+        <!-- แพ็กเกจชั่วโมง (นำเที่ยว/ธุระ) -->
         <div id="hourly-package-box" class="hidden bg-[#070D1A] border border-slate-800 rounded-2xl p-3 space-y-2">
           <label class="block text-[11px] font-semibold text-slate-300">เลือกแพ็กเกจเวลาที่ต้องการจ้างเหมา</label>
           <div class="grid grid-cols-3 gap-2 text-center text-xs">
@@ -193,6 +206,7 @@
           </div>
         </div>
 
+        <!-- 2. จุดรับ และ จุดส่ง -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label class="block text-xs font-semibold text-slate-300">2. กำหนดสถานที่รับและส่ง</label>
@@ -247,6 +261,7 @@
             </div>
           </div>
 
+          <!-- ทางลัดสถานที่ด่วน -->
           <div class="pt-1 space-y-1.5 text-[11px]">
             <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
               <span class="text-slate-500 whitespace-nowrap text-[10px]">📍 จุดรับด่วน:</span>
@@ -266,6 +281,7 @@
           </div>
         </div>
 
+        <!-- 3. Dashboard คำนวณระยะทาง & เวลามาถึงสด -->
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
           <div class="bg-[#070D1A] border border-slate-800 p-2.5 rounded-xl">
             <span class="text-slate-400 block text-[10px]">ระยะทางทั้งสิ้น</span>
@@ -281,6 +297,7 @@
           </div>
         </div>
 
+        <!-- 4. ประเภทยานพาหนะ -->
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1.5">3. ประเภทยานพาหนะของคุณ</label>
           <div class="grid grid-cols-3 gap-2">
@@ -302,6 +319,7 @@
           </div>
         </div>
 
+        <!-- 5. เลือกคนขับ หญิง/ชาย & เกียร์รถ -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1.5">4. ต้องการพนักงานขับรถ</label>
@@ -321,6 +339,7 @@
           </div>
         </div>
 
+        <!-- การ์ดคนขับที่จัดสรรให้ -->
         <div class="bg-[#070D1A] border border-slate-800 rounded-2xl p-4">
           <div class="text-[11px] text-slate-400 font-semibold mb-2.5 flex items-center justify-between">
             <span>พนักงานขับรถที่พร้อมให้บริการตามเงื่อนไข:</span>
@@ -344,12 +363,13 @@
               <div class="text-[10px] text-amber-400 font-semibold mt-1 flex items-center gap-1.5">
                 <span>★ 4.98 (120+ งาน)</span>
                 <span class="text-slate-600">|</span>
-                <span class="text-emerald-400">📹 สวมกล้อง Body Cam บันทึกสดตลอดทริป</span>
+                <span class="text-emerald-400">📹 สวมเสื้อกั๊กสะท้อนแสง + กล้อง Body Cam บันทึกสด</span>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- รายละเอียดค่าบริการ & ปุ่มจอง -->
         <div class="pt-3 border-t border-slate-800 space-y-2">
           <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400 space-y-1">
             <div class="flex justify-between">
@@ -380,7 +400,66 @@
     </div>
   </section>
 
-  <!-- 4. บริการของเรา 6 หมวดหมู่ (Services Section เดิม) -->
+  <!-- 4. Modal: ใบตรวจรับสภาพรถดิจิทัล (Digital Vehicle Inspection Sheet) -->
+  <div id="inspection-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 p-4 flex items-center justify-center">
+    <div class="bg-[#0C1527] border border-slate-800 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 space-y-4 text-left shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">VEHICLE INSPECTION</span>
+          <h3 class="text-base font-bold text-white">ใบตรวจรับสภาพรถก่อนออกเดินทาง</h3>
+        </div>
+        <button onclick="closeInspectionModal()" class="text-slate-400 hover:text-white p-1 text-lg">✕</button>
+      </div>
+
+      <div class="bg-[#070D1A] p-3 rounded-2xl border border-slate-800 text-xs space-y-1">
+        <div class="flex justify-between"><span class="text-slate-400">รหัสงาน:</span><span class="font-mono text-amber-400 font-bold">#PK-2026-LIVE</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">พนักงานขับรถ:</span><span class="text-slate-200" id="insp-driver-name">เกรียงศักดิ์ (DRV-045)</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">สถานะกล้อง Body Cam:</span><span class="text-emerald-400 font-bold">🟢 เชื่อมต่อบันทึกสด</span></div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-slate-300">1. บันทึกสภาพตัวถังรถยนต์ (4 ด้าน)</label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#070D1A] border border-slate-800 cursor-pointer">
+            <input type="checkbox" checked class="accent-amber-400 w-4 h-4 rounded" />
+            <span>หน้ารถ & กระจกหน้า ปกติ</span>
+          </label>
+          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#070D1A] border border-slate-800 cursor-pointer">
+            <input type="checkbox" checked class="accent-amber-400 w-4 h-4 rounded" />
+            <span>ท้ายรถ & ไฟท้าย ปกติ</span>
+          </label>
+          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#070D1A] border border-slate-800 cursor-pointer">
+            <input type="checkbox" checked class="accent-amber-400 w-4 h-4 rounded" />
+            <span>ข้างซ้าย (ประตู/ล้อ) ปกติ</span>
+          </label>
+          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#070D1A] border border-slate-800 cursor-pointer">
+            <input type="checkbox" checked class="accent-amber-400 w-4 h-4 rounded" />
+            <span>ข้างขวา (ประตู/ล้อ) ปกติ</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-slate-300">2. บันทึกเลขไมล์ & ทรัพย์สินมีค่า</label>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="insp-mileage" placeholder="เลขไมล์ปัจจุบัน (กม.)" value="45,210 กม." class="w-full bg-[#070D1A] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400" />
+          <input type="text" id="insp-fuel" placeholder="ระดับน้ำมัน/แบตเตอรี่" value="แบตฯ 85%" class="w-full bg-[#070D1A] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400" />
+        </div>
+        <input type="text" id="insp-valuable" placeholder="ระบุของมีค่าที่ตรวจพบ (กระเป๋า, โน้ตบุ๊ก)" value="กระเป๋าสะพายเบาะหลัง 1 ใบ (ส่งมอบครบ)" class="w-full bg-[#070D1A] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400" />
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 space-y-2">
+        <button onclick="confirmInspection()" class="w-full gold-gradient text-slate-950 font-bold py-3 rounded-xl text-xs active:scale-95 transition">
+          ✓ บันทึกผลตรวจรับรถ & เริ่มการเดินทาง
+        </button>
+        <p class="text-[10px] text-slate-500 text-center">
+          🔒 ระบบจะบันทึกเวลาและพิกัด GPS อัตโนมัติ ป้องกันข้อพิพาทเรื่องรอยขีดข่วน 100%
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. บริการของเรา 6 หมวดหมู่ (Services) -->
   <section id="services" class="py-16 px-4 max-w-6xl mx-auto">
     <div class="text-center mb-10">
       <span class="text-amber-400 text-xs font-bold uppercase tracking-wider">OUR SERVICES</span>
@@ -463,7 +542,7 @@
     </div>
   </section>
 
-  <!-- 5. ตารางอัตราค่าบริการ (Pricing Table เดิม) -->
+  <!-- 6. ตารางอัตราค่าบริการ (Pricing Table) -->
   <section id="pricing" class="py-16 px-4 bg-[#070E1B] border-y border-slate-900">
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-10">
@@ -514,7 +593,7 @@
     </div>
   </section>
 
-  <!-- 6. มาตรฐานความปลอดภัย (Safety Section เดิม) -->
+  <!-- 7. มาตรฐานความปลอดภัย (Safety Standards) -->
   <section id="safety" class="py-16 px-4 max-w-6xl mx-auto">
     <div class="text-center mb-10">
       <span class="text-amber-400 text-xs font-bold uppercase tracking-wider">SAFETY STANDARDS</span>
@@ -587,7 +666,7 @@
     </div>
   </section>
 
-  <!-- 7. สำหรับลูกค้าองค์กร (Corporate Section เดิม) -->
+  <!-- 8. สำหรับองค์กร (Corporate / B2B) -->
   <section id="corporate" class="py-16 px-4 bg-[#070E1B] border-t border-slate-900">
     <div class="max-w-4xl mx-auto text-center">
       <span class="text-amber-400 text-xs font-bold uppercase tracking-wider">CORPORATE SOLUTIONS</span>
@@ -607,13 +686,13 @@
     </div>
   </section>
 
-  <!-- 8. Footer -->
+  <!-- 9. Footer -->
   <footer class="py-8 px-4 text-center text-slate-600 text-[11px] border-t border-slate-900 bg-[#050B14]">
     <p>© 2026 บริการพาคุณและรถถึงบ้านปลอดภัย. All rights reserved.</p>
     <p class="mt-1">โทร: 098-493-9643 | LINE: @safedrive</p>
   </footer>
 
-  <!-- 9. Sticky Action Bar -->
+  <!-- 10. Bottom Sticky Action Bar -->
   <div class="fixed bottom-0 left-0 w-full bg-[#070E1B]/95 backdrop-blur-md border-t border-slate-800 p-3 z-30">
     <div class="max-w-md mx-auto grid grid-cols-2 gap-3">
       <a href="tel:0984939643" class="flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl border border-slate-700 bg-slate-900 text-slate-200 text-xs md:text-sm font-semibold active:scale-95 transition">
@@ -625,8 +704,9 @@
     </div>
   </div>
 
-  <!-- JavaScript -->
+  <!-- JavaScript ระบบสมบูรณ์ -->
   <script>
+    // ข้อมูลจำลองทีมคนขับและพิกัดสด
     const fleetDrivers = [
       {
         id: "DRV-045",
@@ -706,6 +786,7 @@
     let dropoffCoords = [13.7797, 100.5447];
     let fleetMarkers = [];
 
+    // 1. Leaflet Map Initialization
     function initMap() {
       map = L.map('map', { zoomControl: false }).setView([13.7563, 100.5638], 12);
 
@@ -748,6 +829,7 @@
       setInterval(simulateFleetMovement, 3000);
     }
 
+    // 2. หมุดคนขับและระบบแอดมิน
     function renderFleetMarkers() {
       fleetMarkers.forEach(m => map.removeLayer(m));
       fleetMarkers = [];
@@ -841,6 +923,7 @@
       map.setView(coords, 16);
     }
 
+    // 3. Location, Routing & Pricing
     function setQuickLocation(type, title, coords) {
       if (type === 'pickup') {
         pickupCoords = coords;
@@ -1017,6 +1100,7 @@
       const tag = document.getElementById('drv-tag');
       tag.innerText = d.tag;
       tag.className = `${d.tagClass} text-[10px] px-2 py-0.5 rounded-full font-semibold`;
+      document.getElementById('insp-driver-name').innerText = `${d.name} (${d.code})`;
     }
 
     function recenterRoute() {
@@ -1092,7 +1176,18 @@
         .catch(() => {});
     }
 
-    const LINE_OA_ID = "@safedrive"; 
+    // 4. ระบบตรวจรับรถ (Inspection Modal)
+    function openInspectionModal() { document.getElementById('inspection-modal').classList.remove('hidden'); }
+    function closeInspectionModal() { document.getElementById('inspection-modal').classList.add('hidden'); }
+    function confirmInspection() {
+      const mile = document.getElementById('insp-mileage').value;
+      const item = document.getElementById('insp-valuable').value;
+      alert(`✓ บันทึกผลตรวจรับสภาพรถเรียบร้อย!\n• เลขไมล์: ${mile}\n• ทรัพย์สิน: ${item}\n\nระบบเปิดกล้อง Body Cam บันทึกสด และพร้อมเริ่มการเดินทาง`);
+      closeInspectionModal();
+    }
+
+    // 5. ส่งการจองตรงเข้า LINE Official Account
+    const LINE_OA_ID = "@safedrive"; // เปลี่ยนเป็น LINE OA ID ของคุณ
 
     function bookNow() {
       const modeTitle = activeServiceMode === 'party' ? '🍻 เมาไม่ขับ (ส่งกลับบ้าน)' : activeServiceMode === 'tour' ? `🚗 คนขับนำเที่ยว (${selectedHoursCount} ชม.)` : `💼 ธุระทั่วไป (${selectedHoursCount} ชม.)`;
@@ -1122,13 +1217,13 @@
         `• เวลาคนขับถึงจุดรับ: ${eta}\n` +
         `• ยอดสุทธิ: ${fare}\n` +
         `--------------------------\n` +
-        `กรุณากดยืนยันเพื่อล็อกคิวงาน`;
+        `กรุณากดยืนยันเพื่อล็อกคิวงานทันที`;
 
       const lineUrl = `https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA_ID)}/?${encodeURIComponent(bookingText)}`;
       window.location.href = lineUrl;
     }
 
-    // จัดการเปิด-ปิด Dropdown Menu
+    // Toggle Mobile Menu
     const btn = document.getElementById('menu-btn');
     const menu = document.getElementById('mobile-menu');
     btn.addEventListener('click', () => menu.classList.toggle('hidden'));
