@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ใบตรวจรับสภาพรถก่อนเดินทาง — พากลับ (Driver Inspection)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .gold-text { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  </style>
+</head>
+<body class="bg-[#050B14] text-slate-100 min-h-screen pb-16 selection:bg-amber-500 selection:text-black">
+
+  <!-- Header -->
+  <header class="fixed top-0 left-0 w-full bg-[#070E1B]/95 backdrop-blur-md border-b border-slate-800/80 z-40 px-4 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl gold-gradient flex items-center justify-center font-black text-slate-950 text-base shadow-md">
+        📋
+      </div>
+      <div>
+        <h1 class="text-sm font-bold text-white leading-tight">ใบตรวจรับสภาพรถดิจิทัล</h1>
+        <div class="text-[10px] text-amber-400">สำหรับพนักงานขับรถก่อนออกเดินทาง</div>
+      </div>
+    </div>
+    <a href="index.html" class="text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900">
+      หน้าหลัก
+    </a>
+  </header>
+
+  <!-- ฟอร์มตรวจรับสภาพรถ -->
+  <main class="pt-20 px-4 max-w-xl mx-auto space-y-4">
+
+    <!-- ข้อมูลงานและพนักงานขับรถ -->
+    <div class="bg-[#0C1527] border border-slate-800 rounded-3xl p-4 shadow-xl space-y-3">
+      <span class="text-xs font-bold text-amber-400 uppercase tracking-wider block">1. ข้อมูลการปฏิบัติงาน</span>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">รหัสงาน (Job ID)</label>
+          <input type="text" id="job-id" value="#PK-2026-089" class="w-full bg-[#070D1A] border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-400 font-mono" />
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">รหัสคนขับ</label>
+          <input type="text" id="driver-code" value="DRV-045 (เกรียงศักดิ์)" class="w-full bg-[#070D1A] border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-400" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-400 mb-1">ทะเบียนรถลูกค้า / ยี่ห้อรุ่น</label>
+        <input type="text" id="car-info" placeholder="เช่น กข-1234 กทม. (Honda Civic สีดำ)" class="w-full bg-[#070D1A] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400" />
+      </div>
+    </div>
+
+    <!-- บันทึกรูปถ่ายรอบคัน 4 มุม + หน้าปัดไมล์ -->
+    <div class="bg-[#0C1527] border border-slate-800 rounded-3xl p-4 shadow-xl space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">2. บันทึกภาพถ่าย 4 มุม & เลขไมล์</span>
+        <span class="text-[10px] text-emerald-400 font-medium">📷 แตะเพื่อเปิดกล้อง</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <!-- 1. ด้านหน้า -->
+        <label class="relative flex flex-col items-center justify-center h-28 rounded-2xl border-2 border-dashed border-slate-800 bg-[#070D1A] hover:border-amber-400/60 cursor-pointer overflow-hidden p-1">
+          <input type="file" accept="image/*" capture="environment" class="hidden" onchange="previewImg(event, 'preview-front')" />
+          <img id="preview-front" class="hidden w-full h-full object-cover rounded-xl" />
+          <div id="placeholder-front" class="text-center text-slate-400 space-y-1">
+            <span class="text-lg block">📸</span>
+            <span class="text-[11px]">1. ด้านหน้ารถ</span>
+          </div>
+        </label>
+
+        <!-- 2. ด้านหลัง -->
+        <label class="relative flex flex-col items-center justify-center h-28 rounded-2xl border-2 border-dashed border-slate-800 bg-[#070D1A] hover:border-amber-400/60 cursor-pointer overflow-hidden p-1">
+          <input type="file" accept="image/*" capture="environment" class="hidden" onchange="previewImg(event, 'preview-back')" />
+          <img id="preview-back" class="hidden w-full h-full object-cover rounded-xl" />
+          <div id="placeholder-back" class="text-center text-slate-400 space-y-1">
+            <span class="text-lg block">📸</span>
+            <span class="text-[11px]">2. ด้านท้ายรถ</span>
+          </div>
+        </label>
+
+        <!-- 3. ด้านซ้าย -->
+        <label class="relative flex flex-col items-center justify-center h-28 rounded-2xl border-2 border-dashed border-slate-800 bg-[#070D1A] hover:border-amber-400/60 cursor-pointer overflow-hidden p-1">
+          <input type="file" accept="image/*" capture="environment" class="hidden" onchange="previewImg(event, 'preview-left')" />
+          <img id="preview-left" class="hidden w-full h-full object-cover rounded-xl" />
+          <div id="placeholder-left" class="text-center text-slate-400 space-y-1">
+            <span class="text-lg block">📸</span>
+            <span class="text-[11px]">3. ตัวถังฝั่งซ้าย</span>
+          </div>
+        </label>
+
+        <!-- 4. ด้านขวา -->
+        <label class="relative flex flex-col items-center justify-center h-28 rounded-2xl border-2 border-dashed border-slate-800 bg-[#070D1A] hover:border-amber-400/60 cursor-pointer overflow-hidden p-1">
+          <input type="file" accept="image/*" capture="environment" class="hidden" onchange="previewImg(event, 'preview-right')" />
+          <img id="preview-right" class="hidden w-full h-full object-cover rounded-xl" />
+          <div id="placeholder-right" class="text-center text-slate-400 space-y-1">
+            <span class="text-lg block">📸</span>
+            <span class="text-[11px]">4. ตัวถังฝั่งขวา</span>
+          </div>
+        </label>
+      </div>
+
+      <!-- รูปหน้าปัดไมล์ -->
+      <label class="relative flex items-center justify-center h-20 rounded-2xl border-2 border-dashed border-slate-800 bg-[#070D1A] hover:border-amber-400/60 cursor-pointer overflow-hidden p-1">
+        <input type="file" accept="image/*" capture="environment" class="hidden" onchange="previewImg(event, 'preview-dash')" />
+        <img id="preview-dash" class="hidden w-full h-full object-cover rounded-xl" />
+        <div id="placeholder-dash" class="text-center text-slate-400 space-y-0.5">
+          <span class="text-base block">🚘</span>
+          <span class="text-[11px]">5. ถ่ายรูปหน้าปัดไมล์ & ระดับน้ำมัน/แบตเตอรี่</span>
+        </div>
+      </label>
+    </div>
+
+    <!-- เช็กลิสต์ตรวจสภาพและทรัพย์สิน -->
+    <div class="bg-[#0C1527] border border-slate-800 rounded-3xl p-4 shadow-xl space-y-3">
+      <span class="text-xs font-bold text-amber-400 uppercase tracking-wider block">3. เช็กลิสต์สภาพตัวถัง & ทรัพย์สิน</span>
+
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#070D1A] border border-slate-800 cursor-pointer">
+          <input type="checkbox" id="chk-windshield" checked class="accent-amber-400 w-4 h-4 rounded" />
+          <span>กระจกหน้า/หลัง สมบูรณ์</span>
+        </label>
+        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#070D1A] border border-slate-800 cursor-pointer">
+          <input type="checkbox" id="chk-lights" checked class="accent-amber-400 w-4 h-4 rounded" />
+          <span>ไฟหน้า/ไฟท้าย ใช้งานได้</span>
+        </label>
+        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#070D1A] border border-slate-800 cursor-pointer">
+          <input type="checkbox" id="chk-wheels" checked class="accent-amber-400 w-4 h-4 rounded" />
+          <span>ล้อแม็ก & ยางปกติ</span>
+        </label>
+        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#070D1A] border border-slate-800 cursor-pointer">
+          <input type="checkbox" id="chk-bodycam" checked class="accent-amber-400 w-4 h-4 rounded" />
+          <span>Body Cam บันทึกสด 🟢</span>
+        </label>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">เลขไมล์เริ่มต้น (กม.)</label>
+          <input type="text" id="odometer" placeholder="เช่น 45,210 กม." class="w-full bg-[#070D1A] border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-400" />
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">ระดับน้ำมัน / แบตเตอรี่</label>
+          <input type="text" id="fuel-level" placeholder="เช่น 3/4 ถัง หรือ 80%" class="w-full bg-[#070D1A] border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-400" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[11px] text-slate-400 mb-1">ของมีค่าที่ตรวจพบบนรถ (กระเป๋า, คอมพิวเตอร์, พระหน้ารถ ฯลฯ)</label>
+        <input type="text" id="valuables" placeholder="ระบุของมีค่าที่ตรวจพบคู่กับลูกค้า" class="w-full bg-[#070D1A] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400" />
+      </div>
+
+      <div>
+        <label class="block text-[11px] text-slate-400 mb-1">หมายเหตุตำหนิเดิมที่มีก่อนขับ (ถ้ามี)</label>
+        <input type="text" id="damage-notes" placeholder="เช่น รอยขูดกันชนหน้าซ้ายเดิม" class="w-full bg-[#070D1A] border border-slate-800 rounded-xl px-3 py-2 text-xs text-rose-300 placeholder-slate-600 focus:outline-none focus:border-rose-400" />
+      </div>
+    </div>
+
+    <!-- ลายเซ็นลูกค้ายืนยันบนหน้าจอมือถือ (Digital Signature) -->
+    <div class="bg-[#0C1527] border border-slate-800 rounded-3xl p-4 shadow-xl space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">4. ลายเซ็นลูกค้ายืนยันหน้างาน</span>
+        <button type="button" onclick="clearSignature()" class="text-[11px] text-slate-400 hover:text-white underline">
+          ล้างลายเซ็น
+        </button>
+      </div>
+      <p class="text-[11px] text-slate-400">ให้ลูกค้าใช้นิ้วเซ็นรับทราบสภาพรถก่อนเริ่มออกเดินทาง</p>
+      
+      <div class="border border-slate-700/80 rounded-2xl bg-[#070D1A] overflow-hidden">
+        <canvas id="sig-pad" class="w-full h-32 block touch-none"></canvas>
+      </div>
+    </div>
+
+    <!-- ปุ่มส่งข้อมูลและเริ่มเดินทาง -->
+    <div class="space-y-2 pt-2">
+      <button onclick="submitInspection()" class="w-full gold-gradient hover:opacity-95 text-slate-950 font-black py-4 rounded-2xl text-sm shadow-xl active:scale-[0.98] transition flex items-center justify-center gap-2">
+        <span>✓ ยืนยันผลตรวจสภาพ & ส่งเข้า LINE</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+      </button>
+      <p class="text-[10px] text-slate-500 text-center">
+        🔒 ข้อมูลจะถูกบันทึกพร้อมประทับเวลาและพิกัด GPS เพื่อความโปร่งใส ปลอดภัยทั้งลูกค้าและคนขับ
+      </p>
+    </div>
+
+  </main>
+
+  <script>
+    const LINE_OA_ID = "@safedrive"; // เปลี่ยนเป็น LINE ID ของคุณ
+
+    // 1. ระบบพรีวิวรูปภาพเมื่อถ่ายจากกล้อง
+    function previewImg(event, previewId) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.getElementById(previewId);
+          img.src = e.target.result;
+          img.classList.remove('hidden');
+          const placeholderId = previewId.replace('preview-', 'placeholder-');
+          const ph = document.getElementById(placeholderId);
+          if (ph) ph.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // 2. ระบบกระดานเซ็นชื่อบนหน้าจอ (Touch & Mouse Signature Canvas)
+    const canvas = document.getElementById('sig-pad');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+    }
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('DOMContentLoaded', resizeCanvas);
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.x, y: clientY - rect.y };
+    }
+
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+    canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+    canvas.addEventListener('mouseup', () => { isDrawing = false; });
+    canvas.addEventListener('touchstart', (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('touchend', () => { isDrawing = false; });
+
+    function clearSignature() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // 3. รวบรวมข้อมูลและส่งรายงานเข้า LINE
+    function submitInspection() {
+      const job = document.getElementById('job-id').value;
+      const drv = document.getElementById('driver-code').value;
+      const car = document.getElementById('car-info').value || 'ไม่ระบุ';
+      const odo = document.getElementById('odometer').value || 'ไม่ระบุ';
+      const fuel = document.getElementById('fuel-level').value || 'ไม่ระบุ';
+      const val = document.getElementById('valuables').value || 'ไม่มีของมีค่าตกค้าง';
+      const note = document.getElementById('damage-notes').value || 'ไม่มีตำหนิเดิม';
+
+      const timeStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+      const reportText = 
+        `📋 [บันทึกผลตรวจรับสภาพรถก่อนเดินทาง]\n` +
+        `--------------------------\n` +
+        `• รหัสงาน: ${job} (เวลา ${timeStr} น.)\n` +
+        `• พนักงานขับรถ: ${drv}\n` +
+        `• ข้อมูลรถ: ${car}\n` +
+        `• เลขไมล์เริ่มต้น: ${odo}\n` +
+        `• ระดับน้ำมัน/แบต: ${fuel}\n` +
+        `• ตำหนิเดิมที่มี: ${note}\n` +
+        `• ทรัพย์สินมีค่า: ${val}\n` +
+        `• บันทึกกล้อง Body Cam: ออนไลน์ 🟢\n` +
+        `• ผลตรวจ: ลูกค้ายืนยันและเซ็นรับทราบเรียบร้อย\n` +
+        `--------------------------\n` +
+        `พร้อมเริ่มการเดินทางพาลูกค้าส่งถึงบ้านอย่างปลอดภัย`;
+
+      const lineUrl = `https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA_ID)}/?${encodeURIComponent(reportText)}`;
+      window.location.href = lineUrl;
+    }
+  </script>
+</body>
+</html>
