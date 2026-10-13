@@ -17,7 +17,6 @@
     .leaflet-container { background: #050B14 !important; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
     .location-line { position: absolute; left: 11px; top: 24px; bottom: 24px; width: 2px; background: repeating-linear-gradient(to bottom, #475569, #475569 4px, transparent 4px, transparent 8px); }
   </style>
 </head>
@@ -43,19 +42,18 @@
     </div>
   </div>
 
-  <!-- Bottom Sheet (การ์ด) -->
-  <div class="absolute bottom-0 w-full bg-[#0C1527] rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.7)] z-20 flex flex-col max-h-[85vh] md:max-w-md md:left-1/2 md:-translate-x-1/2 md:bottom-4 md:rounded-3xl border-t md:border border-slate-800">
+  <!-- Bottom Sheet (การ์ดฟอร์มจอง) ล็อกความสูงไว้ที่ 55% ของหน้าจอ -->
+  <div class="absolute bottom-0 w-full bg-[#0C1527] rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.7)] z-20 flex flex-col h-[55vh] md:h-auto md:max-h-[85vh] md:max-w-md md:left-1/2 md:-translate-x-1/2 md:bottom-4 md:rounded-3xl border-t md:border border-slate-800">
     
-    <!-- Drag Handle Area (แยกส่วนออกมาเพื่อไม่ให้ทับตัวอักษร) -->
+    <!-- Drag Handle Area (ตัวขีดด้านบน) -->
     <div class="w-full flex justify-center pt-4 pb-2 shrink-0">
       <div class="w-12 h-1.5 bg-slate-600 rounded-full"></div>
     </div>
 
-    <!-- ส่วนเนื้อหาที่เลื่อนได้ (เว้น Padding บนล่างเพิ่ม) -->
+    <!-- ส่วนเนื้อหาที่เลื่อนได้ (Scrollable Content) -->
     <div class="overflow-y-auto custom-scrollbar px-5 pb-12 flex-1 space-y-5">
       
-      <!-- หัวข้อ (เพิ่ม pt-2 กันหัวขาด) -->
-      <h2 class="text-xl font-extrabold text-white pt-2">จะให้เราขับไปส่งที่ไหน?</h2>
+      <h2 class="text-xl font-extrabold text-white pt-1">จะให้เราขับไปส่งที่ไหน?</h2>
 
       <!-- เลือกประเภทบริการ -->
       <div class="flex overflow-x-auto gap-3 pb-2 no-scrollbar">
@@ -206,6 +204,7 @@
       pickupMarker = L.marker(pickupCoords, { draggable: true, icon: pIcon }).addTo(map);
       dropoffMarker = L.marker(dropoffCoords, { draggable: true, icon: dIcon }).addTo(map);
 
+      // ตั้งค่าให้แผนที่อยู่กึ่งกลาง โดยเว้นที่ว่างให้การ์ดด้านล่างที่กินพื้นที่ 55%
       map.fitBounds([pickupCoords, dropoffCoords], { paddingBottomRight: [0, window.innerHeight * 0.55], paddingTopLeft: [0, 80] });
 
       pickupMarker.on('dragend', function (e) {
